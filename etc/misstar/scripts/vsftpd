@@ -1,0 +1,100 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=50
+
+EXTRA_COMMANDS=" status  version"
+EXTRA_HELP="        status  Get shadowsocks status
+        version Get Misstar Tools Version"
+
+## Check The Router Hardware Model 
+Hardware_ID=$(uname -a | grep arm | wc -l)
+if [ "$Hardware_ID" = '0' ];then
+	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+		exit
+	fi
+fi
+						
+if [ "$Hardware_ID" = '1' ];then
+	Hardware_model="arm"
+else
+	Hardware_model="mips"
+fi 
+	
+appname=vsftpd
+ftp_getconfig() {
+	vsftpd_enable=$(uci get misstar.$appname.enable)
+	if [ "$vsftpd_enable" = '0' ];then
+		echo "service vsftpd is disabeld!"
+		exit
+	fi
+	
+	AreadyRunning=$(ps | grep vsftpd | grep -v grep | grep -v scripts | wc -l)
+	if [ "$AreadyRunning" != '0' ];then
+		echo "vsftpd is aleady running,Exit..."
+		exit
+	fi
+	
+	rm_enable=$(uci get misstar.$appname.rm_enable)
+	if [ "$rm_enable" = '0' ];then
+		/etc/misstar/scripts/misstar ftp disable
+	else
+		/etc/misstar/scripts/misstar ftp enable
+	fi
+	
+	
+	root_enable=$(uci get misstar.$appname.root_enable)
+	if [ "$root_enable" = '0' ];then
+		echo "root" >> /etc/vsftpd.users
+	else
+		sed -i "/root/"d /etc/vsftpd.users
+	fi
+	
+	anonymous_enable=$(uci get misstar.$appname.any_enable)
+	if [ "$anonymous_enable" = '1' ];then
+		sed -i 's/anonymous_enable=NO/anonymous_enable=YES/' /etc/misstar/.config/vsftpd.conf
+	else
+		sed -i 's/anonymous_enable=YES/anonymous_enable=NO/' /etc/misstar/.config/vsftpd.conf
+	fi
+
+	write_enable=$(uci get misstar.$appname.write_enable)
+	if [ "$write_enable" = '1' ];then
+		sed -i 's/write_enable=NO/write_enable=YES/' /etc/misstar/.config/vsftpd.conf
+	else
+		sed -i 's/write_enable=YES/write_enable=NO/' /etc/misstar/.config/vsftpd.conf
+	fi
+	
+	cp -rf /etc/misstar/.config/vsftpd.conf /etc/
+}
+								
+
+start() {
+	ftp_getconfig
+	mkdir -m 0755 -p /var/run/vsftpd
+	service_start /etc/misstar/$Hardware_model/vsftpd
+}
+
+stop() {
+	service_stop /etc/misstar/$Hardware_model/vsftpd
+}
+
+status() {
+	status=`ps | grep vsftpd | grep -v grep | wc -l`
+	if [ "$status" = '2' ];then
+		echo "service vsftpd is not running"
+	else
+		echo "service vsftpd is running"
+	fi
+}
+
+
+
+
+
+
+
+
+
+
+

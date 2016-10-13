@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/layer-pc/layer.js" charset="UTF-8"></script>
+		<link rel="stylesheet" href="<%=resource%>/web/luci/layer-pc/skin/layer.css" id="layui_layer_skinlayercss">
+	</head>
+
+	<body onload="init();">
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<h3>WebShell</h3>
+							<iframe id="webshell" src="" width="900" height="500" scroll="no" frameborder="no" style="display: none;"> 
+								MisstarTools使用了框架技术，但是您的浏览器不支持框架，请升级您的浏览器以便正常访问脚本之家。 
+							</iframe> 
+							<div class="system">
+								<form>
+									<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
+										<tr>
+											<th width="141"></th>
+											<th><b>Webshell</b></th>
+										</tr>
+										<tr>
+											<td align="left">开启Webshell</td>
+											<td>
+												<label for="webshell_1">
+													<input type="radio" name="webshell" id="webshell_1" value="1">是</label>
+												<label for="webshell_0">
+													<input type="radio" name="webshell" id="webshell_0" value="0">否</label>
+
+											</td>
+										</tr>
+										<tr>
+											<td align="left">说明</td>
+											<td>
+												<p class="cue">开启Webshell有风险，请注意保管好root用户密码</p>
+											</td>
+										</tr>
+										<tr>
+											<tr>
+												<td width="131"></td>
+												<td>
+													<input type="hidden" name="token" value="21e7d277" />
+													<input name="submit" class="btn_submit" type="submit" onclick="set_webshell();" value="提交" />
+													<input class="btn_submit" onclick="run_webshell();" id="run_webshell1" value="独立窗口弹出" />
+												</td>
+											</tr>
+									</table>
+									
+								</form>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+	<script type="text/javascript">
+		function init() {
+			document.getElementById("li_webshell").className = 'cur';
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_webshell")%>', {}, function(rsp) {
+				if(rsp.code == 0) {
+					var webshell_enable = rsp.webshell_enable;
+					document.getElementById("webshell_" + webshell_enable).checked = true;
+					if(webshell_enable == 0) {
+						document.getElementById("run_webshell1").disabled=true;
+					} else {
+						document.getElementById("run_webshell1").disabled=false;
+						var host = window.location.host;
+						host = "http://" + host + ':4200';
+						document.getElementById("webshell").src=host;
+						document.getElementById("webshell").style.display="block";
+					}
+
+				}
+			});
+
+		}
+		function run_webshell(){
+			var host = window.location.host;
+			host = "http://" + host + ':4200';
+				layer.open({
+					type: 2,
+					title: 'WebShell-Misstar Tools',
+					shadeClose: true,
+					shade: false,
+					maxmin: true, //开启最大化最小化按钮
+					area: ['893px', '600px'],
+					content: host
+				});
+		}
+		function set_webshell(){
+			var webshell_enable;
+			if (document.getElementById("webshell_0").checked == true)
+			{
+				webshell_enable=0;
+			}
+			if (document.getElementById("webshell_1").checked == true)
+			{
+				webshell_enable=1;
+			}
+
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_webshell")%>', {webshell_enable_switch: webshell_enable}, function(rsp) {
+				if(rsp.code == 0) {
+					location.reload(1);
+				} else {
+					alert(rsp.msg);
+				}
+			});
+			return xhr;
+		}
+	</script>
+
+</html>

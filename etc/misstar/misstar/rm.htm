@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body>
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<h3>远程控制</h3>
+							<div class="system">
+								<form>
+									<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
+										<tr>
+											<th width="141"></th>
+											<th><b>远程web</b></th>
+										</tr>
+										<tr>
+											<td align="right">开启远程web</td>
+											<td>
+												<label for="web_enable_0">
+													<input type="radio" name="web_enable" id="web_enable_0" value="0" checked="true">否</label>
+												<label for="web_enable_1">
+													<input type="radio" name="web_enable" id="web_enable_1" value="1">是</label>
+											</td>
+										</tr>
+										<tr>
+											<td align="right">说明</td>
+											<td>
+													<p class="cue">开启远程web后，可配合DDNS在外网对路由器进行管理。</p>
+													<p class="cue">注意：开启远程web后，web相关的如WebShell、Aria2组件也将开启外网访问权限。</p>
+											</td>
+										</tr>
+										<tr>
+											<th width="141"></th>
+											<th><b>远程ssh</b></th>
+										</tr>
+										<tr>
+											<td align="right">开启ssh</td>
+											<td>
+												<label for="sshd_enable_0">
+													<input type="radio" name="sshd_enable" id="sshd_enable_0" value="0" checked="true">否</label>
+												<label for="sshd_enable_1">
+													<input type="radio" name="sshd_enable" id="sshd_enable_1" value="1">是</label>
+											</td>
+										</tr>
+										<tr>
+											<td align="right">说明</td>
+											<td>
+													<p class="cue">在外网环境下允许使用ssh登录到路由器(不是WebShell)。</p>
+											</td>
+										</tr>
+										<tr>
+											<td width="131"></td>
+											<td>
+												<input type="hidden" name="token" value="21e7d277" />
+												<input name="submit" class="btn_submit" type="submit" onclick="set_rm();" value="提交" />
+											</td>
+										</tr>
+									</table>
+								</form>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+<script>
+	document.getElementById("li_rm").className='cur';
+		function set_rm() {
+			var adm_enable;
+			if (document.getElementById("web_enable_0").checked == true)
+			{
+				web_enable=0;
+			}
+			if (document.getElementById("web_enable_1").checked == true)
+			{
+				web_enable=1;
+			}
+			
+			if (document.getElementById("sshd_enable_0").checked == true)
+			{
+				sshd_enable=0;
+			}
+			if (document.getElementById("sshd_enable_1").checked == true)
+			{
+				sshd_enable=1;
+			}
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_rm")%>', {web_enable_switch: web_enable,sshd_enable_switch: sshd_enable}, function(rsp) {
+				if(rsp.code == 0) {
+					location.reload(1);
+				} else {
+					alert(rsp.msg);
+				}
+			});
+			return xhr;
+		}
+	</script>
+
+	<script>
+		var modelSs = (function() {
+			function admInfo() {
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_rm")%>', {}, function(rsp) {
+					if(rsp.code == 0) {
+						var web_enable = rsp.web_enable;
+						var sshd_enable = rsp.sshd_enable;
+						document.getElementById("web_enable_" + web_enable).checked = true;
+						document.getElementById("sshd_enable_" + sshd_enable).checked = true;
+					}
+				});
+				return xhr;
+			}
+			return {
+				init: function() {
+					admInfo();
+				}
+			}
+		}());
+		$(function() {
+			modelSs.init();
+		});
+</script>
+</html>

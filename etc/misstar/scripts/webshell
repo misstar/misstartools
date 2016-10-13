@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+EXTRA_COMMANDS=" status  version"
+EXTRA_HELP="        status  Get shadowsocks status
+        version Get Misstar Tools Version"
+
+## Check The Router Hardware Model 
+Hardware_ID=$(uname -a | grep arm | wc -l)
+if [ "$Hardware_ID" = '0' ];then
+	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+		exit
+	fi
+fi
+						
+if [ "$Hardware_ID" = '1' ];then
+	Hardware_model="arm"
+else
+	Hardware_model="mips"
+fi 
+
+appname=webshell
+start() {
+	adm_enable=$(uci get misstar.$appname.enable)
+	if [ "$adm_enable" = '0' ];then
+		echo "service Adm is disabeld!"
+		exit
+	fi
+	AreadyRunning=$(ps | grep shellinabox | grep -v grep | wc -l)
+	if [ "$AreadyRunning" != '0' ];then
+		echo "Webshell is aleady running,Exit..."
+		exit
+	fi
+    echo "running shellinaboxd..."
+    service_start /etc/misstar/$Hardware_model/shellinaboxd -s /:LOGIN -u root &
+    echo "ok!"
+}
+stop() {
+    echo "stop shellinaboxd..."
+    service_stop /etc/misstar/$Hardware_model/shellinaboxd
+    echo "end!"
+}
+restart() {
+    stop;sleep 2;start
+}

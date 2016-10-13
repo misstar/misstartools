@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body>
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<h3>阿呆喵</h3>
+							<div class="system">
+								<form id="adm_main">
+									<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
+										<tr>
+											<th width="141"></th>
+											<th><b>阿呆喵</b></th>
+										</tr>
+										<tr>
+											<td align="left">开启广告过滤</td>
+											<td>
+												<label for="adm_enable_1">
+													<input type="radio" name="adm_enable1" id="adm_enable_1" value="1">是</label>
+												<label for="adm_enable_0">
+													<input type="radio" name="adm_enable1" id="adm_enable_0" value="0" checked="true">否</label>
+											</td>
+										</tr>
+										<tr>
+											<td align="left">说明</td>
+											<td>
+												<p class="cue">开启：过滤视频广告<br>关闭：不过滤视频广告</p>
+											</td>
+										</tr>
+										<tr>
+											<td align="left">工作模式</td>
+													<td>
+														<select id="adm_mode">
+															<option value="videomode">视频模式</option>
+															<option value="wholemode">全局模式</option>
+														</select>
+														<p class="cue">视频模式：针对主流视频网站进行过滤开头广告，直接播放视频[<b>强力推荐</b>]<br>
+															全局模式：过滤所有网站的广告，包括视频、弹窗等广告，占用资源较大。</p>
+													</td>
+										</tr>
+										
+										<tr>
+											<td width="131"></td>
+											<td>
+												<input type="hidden" name="token" value="21e7d277" />
+												<input name="submit" onclick="set_adm();" class="btn_submit" type="submit" value="提交" />
+											</td>
+										</tr>
+									</table>
+								</form>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+	<script>
+		document.getElementById("li_adm").className = 'cur';
+		function set_adm() {
+			var adm_enable;
+			if (document.getElementById("adm_enable_0").checked == true)
+			{
+				adm_enable=0;
+			}
+			if (document.getElementById("adm_enable_1").checked == true)
+			{
+				adm_enable=1;
+			}
+			adm_mode=document.getElementById("adm_mode").value;
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_adm")%>', {
+				adm_enable_switch: adm_enable,
+				adm_mode: adm_mode
+			}, function(rsp) {
+				if(rsp.code == 0) {
+					location.reload(1);
+				} else {
+					alert(rsp.msg);
+				}
+			});
+			return xhr;
+		}
+	</script>
+
+	<script>
+		var modelSs = (function() {
+			function admInfo() {
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_adm")%>', {}, function(rsp) {
+					if(rsp.code == 0) {
+						var adm_enable = rsp.adm_enable;
+						var adm_mode = rsp.adm_mode;
+						document.getElementById("adm_enable_" + adm_enable).checked = true;
+						var select = document.getElementById("adm_mode");
+							for (var i = 0; i < select.options.length; i++) {
+								if (select.options[i].value == adm_mode) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
+					}
+				});
+				return xhr;
+			}
+			return {
+				init: function() {
+					admInfo();
+				}
+			}
+		}());
+		$(function() {
+			modelSs.init();
+		});
+	</script>
+
+</html>

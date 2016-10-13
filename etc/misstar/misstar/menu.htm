@@ -1,0 +1,60 @@
+<%
+    local XQSysUtil = require "xiaoqiang.util.XQSysUtil"
+    local XQTopology = require("xiaoqiang.module.XQTopology")
+    local homeUrl = '/'
+    if XQSysUtil.getInitInfo() then
+        homeUrl = luci.dispatcher.build_url("web", "home")
+    end
+    local XQFunction = require("xiaoqiang.common.XQFunction")
+    local router_name = XQFunction.getRouterName()
+    -- ap model
+    local netMode = 0
+    local mode = XQFunction.getNetMode()
+    if mode == "lanapmode" then
+        netMode = 2
+    elseif mode == "wifiapmode" then
+        netMode = 1
+    end
+    local hardware = string.lower( XQSysUtil.getHardware() )
+    local uci = require("luci.model.uci").cursor()
+    local usbIsSupport = tostring(uci:get("features", "hardware", "usb"))
+    local showTopoLink = 0
+    local topo = XQTopology.topologicalGraph()
+    local leafs = topo["leafs"]
+    if leafs and #leafs > 0 then
+        showTopoLink = 1
+    end
+
+%>
+<noscript>
+<div class="noscript"><%:你的浏览器禁止了Javascript功能，会造成无法使用系统进行路由器管理，请开启。%></div>
+</noscript>
+<script>
+var GLOBALHEADER = true;
+</script>
+<div id="dcLeft"><div id="menu">
+ <ul class="top">
+  <li><a href="index"><i class="home"></i><em>Misstar Tools</em></a></li>
+ </ul>
+ <ul>
+  <li id="li_adm"><a href="adm"><i class="nav"></i><em>广告过滤</em></a></li>
+  <li id="li_xlkn"><a href="xlkn"><i class="show"></i><em>迅雷快鸟</em></a></li>
+  <li id="li_ss"><a href="ss"><i <i class="backup"></i><em>科学上网</em></a></li>
+  <li id="li_db"><a href="kddb"><i class="productCat"></i><em>宽带多拨</em></a></li>
+  
+ </ul>
+  <ul>
+  <li id="li_ftp"><a href="ftp"><i class="page"></i><em>VSFTP</em></a></li>
+  <li id="li_webshell"><a href="webshell"><i class="product"></i><em>WebShell</em></a></li>
+  <li id="li_rm"><a href="rm"><i class="article"></i><em>远程管理</em></a></li>
+  <li id="li_aria2"><a href="aria2"><i class="backup"></i><em>Aria2</em></a></li>
+ </ul>
+
+  <ul class="bot">
+  
+  <li id="li_help"><a href="help"><i class="theme"></i><em>使用帮助</em></a></li>
+  <li id="li_mzsm"><a href="mzsm"><i class="managerLog"></i><em>免责声明</em></a></li>
+  <li id="li_about"><a href="about"><i class="manager"></i><em>关于</em></a></li>
+  
+ </ul>
+</div></div>

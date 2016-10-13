@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body>
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<iframe id="aria2" src="./aria" width="900" height="700" scroll="no" frameborder="no" style="display: none;"> 
+								脚本之家使用了框架技术，但是您的浏览器不支持框架，请升级您的浏览器以便正常访问脚本之家。 
+							</iframe> 
+							<div class="system">
+								<form id="aria2_main">
+									<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
+										<tr>
+											<th width="141"></th>
+											<th><b>Aria2</b></th>
+										</tr>
+										<tr>
+											<td align="left">开启</td>
+											<td>
+												<label for="aria2_enable_1">
+													<input type="radio" name="aria2_enable1" id="aria2_enable_1" value="1">是</label>
+												<label for="aria2_enable_0">
+													<input type="radio" name="aria2_enable1" id="aria2_enable_0" value="0" checked="true">否</label>
+											</td>
+										</tr>
+										<tr>
+											<td align="left">下载路径</td>
+											<td>
+												<input type="text" id="user_path" value="" size="80" class="inpMain" />
+												<p class="cue">请确认设置的目录真实存在也有写权限。</p>
+												<p class="cue">修改下载路径后需要重启Aria2进程。</p>
+											</td>
+										</tr>
+										<tr>
+											<td width="131"></td>
+											<td>
+												<input type="hidden" name="token" value="21e7d277" />
+												<input name="submit" onclick="set_aria2();" class="btn_submit" type="submit" value="提交" />
+											</td>
+										</tr>
+									</table>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+<script>
+	document.getElementById("li_aria2").className = 'cur';
+	function set_aria2() {
+			var aria2_enable;
+			if (document.getElementById("aria2_enable_0").checked == true)
+			{
+				aria2_enable=0;
+			}
+			if (document.getElementById("aria2_enable_1").checked == true)
+			{
+				aria2_enable=1;
+			}
+			user_path=document.getElementById("user_path").value;
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_aria2")%>', {
+				aria2_enable_switch: aria2_enable,
+				user_path: user_path
+			}, function(rsp) {
+				if(rsp.code == 0) {
+					location.reload(1);
+				} else {
+					alert(rsp.msg);
+				}
+			});
+			return xhr;
+		}
+	var modelSs = (function() {
+			function aria2Info() {
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_aria2")%>', {}, function(rsp) {
+					if(rsp.code == 0) {
+						var aria2_enable = rsp.aria2_enable;
+						if(aria2_enable == 1){
+							document.getElementById("aria2").style.display="block";
+						}
+						document.getElementById("aria2_enable_" + aria2_enable).checked = true;
+						document.getElementById("user_path").value = rsp.user_path;
+					}
+				});
+				return xhr;
+			}
+			return {
+				init: function() {
+					aria2Info();
+				}
+			}
+		}());
+		$(function() {
+			modelSs.init();
+		});
+</script>
+</html>

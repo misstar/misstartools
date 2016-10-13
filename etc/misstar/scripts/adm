@@ -1,0 +1,80 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+EXTRA_COMMANDS=" status  version"
+EXTRA_HELP="        status  Get shadowsocks status
+        version Get Misstar Tools Version"
+
+## Check The Router Hardware Model 
+Hardware_ID=$(uname -a | grep arm | wc -l)
+if [ "$Hardware_ID" = '0' ];then
+	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+		exit
+	fi
+fi
+						
+if [ "$Hardware_ID" = '1' ];then
+	Hardware_model="arm"
+else
+	Hardware_model="mips"
+fi 
+
+appname=adm
+start() {
+	adm_enable=$(uci get misstar.$appname.enable)
+	if [ "$adm_enable" = '0' ];then
+		echo "service Adm is disabeld!"
+		exit
+	fi
+    echo "running adm..."
+ 	AreadyRunning=$(ps | grep adm | grep -v grep | grep -v scripts | wc -l)
+	if [ "$AreadyRunning" != 0 ];then
+		echo "vsftpd is aleady running,Exit..."
+		exit
+	fi
+ 	
+    lanip=$(ifconfig br-lan | grep "inet addr:" | cut -d: -f2 | awk '{print$1}')
+    
+    adm_mode=$(uci get misstar.$appname.mode)
+    if [ "$adm_mode" == "wholemode" ]; then
+    	iptables -t nat -N ADM
+		iptables -t nat -A ADM -d $lanip/16 -j RETURN
+		iptables -t nat -A ADM -p tcp --dport 80 -j REDIRECT --to-ports 18309
+		iptables -t nat -A PREROUTING -p tcp -j ADM
+		service_start /etc/misstar/$Hardware_model/adm/adm & >/dev/null 2>&1
+    	echo "ok adm!"
+    elif [ "$adm_mode" == "videomode" ]; then
+   		service_start /etc/misstar/$Hardware_model/adm/adm & >/dev/null 2>&1
+    	ipset -N admlist iphash
+		iptables -t nat -N ADM
+		iptables -t nat -A ADM -d 0.0.0.0/8 -j RETURN
+		iptables -t nat -A ADM -d 10.0.0.0/8 -j RETURN
+		iptables -t nat -A ADM -d 127.0.0.0/8 -j RETURN
+		iptables -t nat -A ADM -d 169.254.0.0/16 -j RETURN
+		iptables -t nat -A ADM -d 172.16.0.0/12 -j RETURN
+		iptables -t nat -A ADM -d 192.168.0.0/16 -j RETURN
+		iptables -t nat -A ADM -d 224.0.0.0/4 -j RETURN
+		iptables -t nat -A ADM -d 240.0.0.0/4 -j RETURN
+		iptables -t nat -A ADM -p tcp --dport 80 -m set --match-set admlist dst -j REDIRECT --to-port 18309
+		iptables -t nat -A PREROUTING -p tcp -j ADM
+		ln -s /etc/misstar/.config/admlist.conf /etc/dnsmasq.d/
+		/etc/init.d/dnsmasq restart
+		echo "ok adm!"
+    fi
+}
+stop() {
+    echo "stop adm..."
+    service_stop /etc/misstar/$Hardware_model/adm/adm
+    iptables -t nat -D PREROUTING -p tcp -j ADM &> /dev/null
+    iptables -t nat -F ADM &> /dev/null
+	iptables -t nat -X ADM &> /dev/null
+	rm -rf /etc/dnsmasq.d/admlist.conf
+	rm -rf /tmp/etc/dnsmasq.d/admlist.conf
+	ipset destroy admlist &> /dev/null
+    echo "end adm!"
+}
+restart() {
+    stop;sleep 2;start
+}

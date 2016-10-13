@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body>
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<h3>免责声明</h3>
+							<div class="system">
+								<form action="mobile.php?rec=system&act=update" method="post" enctype="multipart/form-data">
+									<p>1.安装本工具箱需要开启路由器SSH功能，由此产生的任何风险、出现任何问题与本工具无关。</p>
+									<p><%:2.本工具尚在测试阶段，存在部分功能、安全漏洞，对可能产生的风险本工具不做任何承担%></p>
+                            		<p><%:3.本工具箱内所有工具均作学习、研究之用，禁止用于商业和非法用途，由此产生的任何后果与本工具无关%></p>
+                            		<p><%:4.若安装使用本工具，视为同意上述声明。%></p>
+								</form>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+<script>
+	document.getElementById("li_mzsm").className='cur';
+</script>
+</html>

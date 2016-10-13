@@ -1,0 +1,251 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=95
+
+SERVICE_USE_PID=1
+SERVICE_WRITE_PID=1
+SERVICE_DAEMONIZE=1
+
+. /etc/misstar/scripts/MTbase
+
+wan_mode=`ifconfig | grep pppoe-wan | wc -l`
+if [ "$wan_mode" = '1' ];then
+	wanip=$(ifconfig pppoe-wan | grep "inet addr:" | cut -d: -f2 | awk '{print$1}')
+else
+	wanip=$(ifconfig eth0.2 | grep "inet addr:" | cut -d: -f2 | awk '{print$1}')
+fi
+
+lanip=$(ifconfig br-lan | grep "inet addr:" | cut -d: -f2 | awk '{print$1}')
+CONFIG=/etc/misstar/.config/shadowsocks.json
+DNSCONF=/etc/misstar/.config/dns2socks.conf
+DNS_PORT=1082
+
+chnroute=/etc/misstar/.config/chnroute.txt
+
+## Check The Router Hardware Model 
+Hardware_ID=$(uname -a | grep arm | wc -l)
+if [ "$Hardware_ID" = '0' ];then
+	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+		exit
+	fi
+fi
+
+if [ "$Hardware_ID" = '1' ];then
+	Hardware_model="arm"
+else
+	Hardware_model="mips"
+fi 
+
+
+
+
+APPPATH=/etc/misstar/$Hardware_model/ss-redir
+LOCALPATH=/etc/misstar/$Hardware_model/ss-local
+DNSPATH=/etc/misstar/$Hardware_model/dns2socks
+appname=misstar
+ss_getconfig() {
+	local_ip=0.0.0.0
+	ss_server_ip=$(uci get $appname.ss.ss_server)
+	#ss_server_ip=`nslookup $ss_server_ip | grep 'Address 1' | grep -v '127.0.0.1' | awk '{print $3}'`
+	ss_server_port=$(uci get $appname.ss.ss_server_port)
+	ss_server_password=$(uci get $appname.ss.ss_password)
+	ss_local_port=$(uci get $appname.ss.ss_local_port)
+	ss_server_method=$(uci get $appname.ss.ss_method)
+	rm -rf $CONFIG
+	echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$ss_local_port',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $CONFIG
+	DNS_PORT=`expr $ss_local_port + 1`
+	echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $DNSCONF
+	}
+ss_getconfig
+
+start()
+{
+	vsftpd_enable=$(uci get misstar.ss.enable)
+	if [ "$vsftpd_enable" = '0' ];then
+		echo "service ss is disabeld!"
+		exit
+	fi
+	
+	AreadyRunning=$(ps | grep ss-redir | grep -v grep | wc -l)
+	if [ "$AreadyRunning" != '0' ];then
+		echo "SS is aleady running,Exit..."
+		exit
+	fi
+	
+	insmod ipt_REDIRECT 2>/dev/null
+	chmod +x /etc/misstar/$Hardware_model/ss-redir	
+	chmod +x /etc/misstar/$Hardware_model/ss-local
+	#/etc/misstar/scripts/pdnsd.sh start
+	
+    
+	MTlog "INFO" "Start DNS Process..."
+
+	service_start $LOCALPATH -c $DNSCONF
+	service_start $DNSPATH 127.0.0.1:$DNS_PORT 8.8.8.8:53 127.0.0.1:15353
+	
+	if [ $? -eq 0 ];then
+    	MTlog "INFO" "Done!"
+	else 
+   		MTlog "Error" "DNS Process start failed,Exiting..."
+    	exit
+	fi
+	
+	ss_mode=$(uci get $appname.ss.ss_mode)
+	case $ss_mode in
+		"gfwlist")
+			service_start $APPPATH -b 0.0.0.0 -c $CONFIG
+			if [ $? -eq 0 ];then
+    			MTlog "INFO" "Start Shadowsocks as GFWlist Mode. Done"
+			else 
+   				MTlog "Error" "Shadowsocks Process start failed,Exiting..."
+   			 	exit
+			fi
+			start_ss_rules_gfwlist
+			;;
+		"whitelist")
+			service_start $APPPATH -b 0.0.0.0 -c $CONFIG
+			if [ $? -eq 0 ];then
+    			MTlog "INFO" "Start Shadowsocks as whitelist Mode. Done"
+			else 
+   				MTlog "Error" "Shadowsocks Process start failed,Exiting..."
+   			 	exit
+			fi
+			start_ss_rules_whitelist
+			;;
+		"gamemode")
+			service_start $APPPATH -b 0.0.0.0 -u -c $CONFIG
+			if [ $? -eq 0 ];then
+    			MTlog "INFO" "Start Shadowsocks as Game Mode. Done"
+			else 
+   				MTlog "Error" "Shadowsocks Process start failed,Exiting..."
+   			 	exit
+			fi
+			start_ss_rules_whitelist
+			start_ss_udp
+			;;
+		"wholemode")
+			service_start $APPPATH -b 0.0.0.0 -c $CONFIG
+			if [ $? -eq 0 ];then
+    			MTlog "INFO" "Start Shadowsocks as Whole Mode. Done"
+			else 
+   				MTlog "Error" "Shadowsocks Process start failed,Exiting..."
+   			 	exit
+			fi
+			start_ss_rules
+			;;
+	esac
+	ln -s /etc/misstar/.config/pac.conf /etc/dnsmasq.d/
+	/etc/init.d/dnsmasq restart
+	# Client Mode
+	#service_start /usr/bin/ss-local -b 0.0.0.0 -u -c $CONFIG -l 5353
+	# Proxy Mode
+	#service_start /usr/bin/ss-redir -b 0.0.0.0 -u -c $CONFIG
+	# Tunnel
+	#service_start /usr/bin/ss-tunnel -b 0.0.0.0 -u -c $CONFIG -l $TUNNEL_PORT -L $DNS
+	#start_ss_rules
+	#start_ss_udp
+}
+
+start_ss_rules_whitelist()
+{	
+	MTlog "INFO" "Add iptables rules... "
+	iptables -t nat -N SHADOWSOCKS
+	iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $lanip/16 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $wanip/16 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $ss_server_ip -j RETURN
+	sed -e "s/^/-A nogfwnet &/g" -e "1 i\-N nogfwnet hash:net" $chnroute | ipset -R -!
+	iptables -t nat -A SHADOWSOCKS -p tcp -m set ! --match-set nogfwnet dst -j REDIRECT --to-ports $ss_local_port
+	iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+	#iptables -t nat -A PREROUTING -s $lanip/24 -p udp --dport 53 -j DNAT --to $lanip
+	MTlog "INFO" "Done!"
+}
+
+start_ss_rules()
+{
+	MTlog "INFO" "Add iptables rules... "
+	iptables -t nat -N SHADOWSOCKS
+	iptables -t nat -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $lanip/24 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $wanip/16 -j RETURN
+	iptables -t nat -A SHADOWSOCKS -d $ss_server_ip -j RETURN
+	iptables -t nat -A SHADOWSOCKS -p tcp -j REDIRECT --to-ports $ss_local_port
+	iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+	MTlog "INFO" "Done!"
+}
+
+start_ss_rules_gfwlist()
+{
+	MTlog "INFO" "Add iptables rules... "
+	ipset -N gfwlist iphash -!
+	iptables -t nat -N SHADOWSOCKS
+	iptables -t nat -A SHADOWSOCKS -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-port $ss_local_port
+	iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
+	MTlog "INFO" "Done!"
+}
+
+start_ss_udp()
+{
+	MTlog "INFO" "Add iptables UDP rules... "
+	ip rule add fwmark 0x01/0x01 table 300
+	ip route add local 0.0.0.0/0 dev lo table 300
+	iptables -t mangle -N SHADOWSOCKS
+	iptables -t mangle -A SHADOWSOCKS -d 0.0.0.0/8 -j RETURN
+	iptables -t mangle -A SHADOWSOCKS -d 127.0.0.1/16 -j RETURN
+	iptables -t mangle -A SHADOWSOCKS -d $lanip/16 -j RETURN
+	iptables -t mangle -A SHADOWSOCKS -d $wanip/16 -j RETURN
+	iptables -t mangle -A SHADOWSOCKS -d $ss_server_ip -j RETURN
+	iptables -t mangle -A PREROUTING -p udp -j SHADOWSOCKS
+	iptables -t mangle -A SHADOWSOCKS -p udp -m set ! --match-set nogfwnet dst -j TPROXY --on-port $ss_local_port --tproxy-mark 0x01/0x01
+	MTlog "INFO" "Done!"
+	
+	
+	chmod -x /opt/filetunnel/stunserver
+	killall -9 stunserver
+}
+
+stop() 
+{
+	# Client Mode
+	#service_stop /usr/bin/ss-local
+	# Proxy Mode
+	service_stop $APPPATH
+	service_stop $LOCALPATH
+	service_stop $DNSPATH
+	# Tunnel
+	#service_stop /usr/bin/ss-tunnel
+	stop_ss_rules
+}
+
+stop_ss_rules()
+{	
+	MTlog "INFO" "Delete iptables rules... "
+	ip rule del fwmark 0x01/0x01 table 300 &> /dev/null
+	ip route del local 0.0.0.0/0 dev lo table 300 &> /dev/null
+	iptables -t mangle -D PREROUTING -p udp -j SHADOWSOCKS &> /dev/null
+	iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS &> /dev/null
+	iptables -t mangle -F SHADOWSOCKS &> /dev/null
+	iptables -t mangle -X SHADOWSOCKS &> /dev/null
+	iptables -t nat -F SHADOWSOCKS &> /dev/null
+	iptables -t nat -X SHADOWSOCKS &> /dev/null
+	ipset destroy nogfwnet &> /dev/null
+	ipset destroy gfwlist &> /dev/null
+	#/etc/misstar/scripts/pdnsd.sh stop
+	iptables -t nat -D PREROUTING -s $lanip/24 -p udp --dport 53 -j DNAT --to $lanip &> /dev/null
+	MTlog "INFO" "Done!"
+	MTlog "INFO" "Remove Cache files..."
+	rm -rf /etc/dnsmasq.d/pac.conf
+	rm -rf /etc/dnsmasq.d/dnsmasq.conf.add
+	/etc/init.d/dnsmasq restart
+	MTlog "INFO" "Done!"
+	chmod +x /opt/filetunnel/stunserver
+}
+
+restart() 
+{
+	stop
+	sleep 3
+	start
+}

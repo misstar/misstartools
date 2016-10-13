@@ -1,0 +1,75 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=50
+
+EXTRA_COMMANDS=" status  version"
+EXTRA_HELP="        status  Get shadowsocks status
+        version Get Misstar Tools Version"
+
+## Check The Router Hardware Model 
+Hardware_ID=$(uname -a | grep arm | wc -l)
+if [ "$Hardware_ID" = '0' ];then
+	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+		exit
+	fi
+fi
+						
+if [ "$Hardware_ID" = '1' ];then
+	Hardware_model="arm"
+else
+	Hardware_model="mips"
+	result1=$(md5sum /lib/libstdc\+\+.so  | awk '{print $1}')
+	result2=$(md5sum /etc/misstar/mips/libstdc\+\+.so.6.0.16 | awk '{print $1}')
+	if [ "$result1" != "$result2" ]; then
+		rm -rf /lib/libstdc\+\+.so
+		ln -s /etc/misstar/mips/libstdc\+\+.so.6.0.16 /lib/libstdc\+\+.so
+	fi
+	result3=$(md5sum /lib/libstdc\+\+.so.6 | awk '{print $1}')
+	if [ "$result3" != "$result2" ]; then
+		rm -rf /lib/libstdc\+\+.so.6
+		ln -s /etc/misstar/mips/libstdc\+\+.so.6.0.16 /lib/libstdc\+\+.so.6
+	fi
+	ln -s /etc/misstar/mips/libxml2.so /usr/lib/libxml2.so.2
+fi 
+	
+appname=aria2
+								
+
+start() {
+		vsftpd_enable=$(uci get misstar.$appname.enable)
+	if [ "$vsftpd_enable" = '0' ];then
+		echo "service $appname is disabeld!"
+		exit
+	fi
+	
+	AreadyRunning=$(ps | grep aria2c | grep -v grep | wc -l)
+	if [ "$AreadyRunning" != '0' ];then
+		echo "Aria2 is aleady running,Exit..."
+		exit
+	fi
+	
+	userpath=$(uci get misstar.$appname.user_path)
+	if [ $userpath ];then
+		sed -i "/^dir=/cdir=$userpath"  /etc/misstar/.config/aria2.conf 
+	else
+		MTlog "Error" "Download path is NULL,Exiting..."
+    	exit
+	fi
+	service_start /etc/misstar/$Hardware_model/aria2c --conf-path=/etc/misstar/.config/aria2.conf -D >/dev/null 2>&1
+}
+
+stop() {
+	service_stop /etc/misstar/$Hardware_model/aria2c --conf-path=/etc/misstar/.config/aria2.conf -D >/dev/null 2>&1
+}
+
+
+
+
+
+
+
+
+
+

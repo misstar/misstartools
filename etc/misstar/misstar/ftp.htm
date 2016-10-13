@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body onload="init();">
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<h3>VSFTP服务器</h3>
+							<div class="system">
+								<form>
+									<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
+										<tr>
+											<th width="141"></th>
+											<th><b>VSFTP</b></th>
+										</tr>
+										<tr>
+											<td align="left">开启FTP服务器</td>
+											<td>
+												<label for="ftp_enable_1">
+													<input type="radio" name="ftp_enable" id="ftp_enable_1" value="1" onchange="change();">是</label>
+												<label for="ftp_enable_0">
+													<input type="radio" name="ftp_enable" id="ftp_enable_0" value="0" onchange="change();">否</label>
+
+											</td>
+										</tr>
+										<tr>
+											<td align="left">说明</td>
+											<td>
+												<p class="cue">开启：开启ftp服务器，可远程上传下载文件<br>关闭：关闭FTP</p>
+											</td>
+										</tr>
+										<tr>
+											<th width="131"></th>
+											<th><b>FTP服务器配置</b></th>
+										</tr>
+										<tr>
+											<td align="left">允许外网访问</td>
+											<td>
+												<label for="ftp_rm_enable_1">
+															<input type="radio" name="ftp_rm_enable" id="ftp_rm_enable_1" value="1">是</label>
+												<label for="ftp_rm_enable_0">
+															<input type="radio" name="ftp_rm_enable" id="ftp_rm_enable_0" value="0">否</label>
+
+												<p class="cue">外网访问需要固定IP或者配合DDNS使用</p>
+											</td>
+										</tr>
+
+										<tr>
+											<td align="left">允许匿名登录</td>
+											<td>
+												<label for="any_enable_1">
+															<input type="radio" name="any_enable" id="any_enable_1" value="1">是</label>
+												<label for="any_enable_0">
+															<input type="radio" name="any_enable" id="any_enable_0" value="0">否</label>
+
+											</td>
+										</tr>
+										<tr>
+											<td align="left">允许上传</td>
+											<td>
+												<label for="write_enable_1">
+															<input type="radio" name="write_enable" id="write_enable_1" value="1">是</label>
+												<label for="write_enable_0">
+															<input type="radio" name="write_enable" id="write_enable_0" value="0">否</label>
+
+											</td>
+										</tr>
+										<tr>
+											<td align="left">允许ROOT用户登录</td>
+											<td>
+												<label for="root_enable_1">
+															<input type="radio" name="root_enable" id="root_enable_1" value="1">是</label>
+												<label for="root_enable_0">
+															<input type="radio" name="root_enable" id="root_enable_0" value="0">否</label>
+
+											</td>
+										</tr>
+										<tr>
+											<th width="131"></th>
+											<th><b>FTP用户</b></th>
+										</tr>
+										<tr>
+											<td align="left">用户名</td>
+											<td>
+												<input type="text" id="ftp_userid" value="" size="80" class="inpMain" />
+												<p class="cue">新建的ftp用户无法ssh登录路由器</p>
+												<p class="cue">这里请不要填写root用户，会导致root用户无法ssh登录路由器</p>
+											</td>
+										</tr>
+										<tr>
+											<td align="left">登录密码</td>
+											<td>
+												<input type="password" id="ftp_passwd" value="" size="80" class="inpMain" />
+											</td>
+										</tr>
+										<tr>
+											<td align="left">默认路径</td>
+											<td>
+												<input type="text" id="user_path" value="" size="80" class="inpMain" />
+											</td>
+										</tr>
+
+										<tr>
+											<td width="131"></td>
+											<td>
+												<input type="hidden" name="token" value="21e7d277" />
+												<input name="submit" class="btn_submit" type="submit" onclick="set_ftp();" value="提交" />
+											</td>
+										</tr>
+									</table>
+								</form>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+	<script>
+		function init() {
+			document.getElementById("li_ftp").className = 'cur';
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_ftp")%>', {}, function(rsp) {
+				if(rsp.code == 0) {
+					document.getElementById("ftp_enable_" + rsp.enable).checked = true;
+					document.getElementById("ftp_rm_enable_" + rsp.rm_enable).checked = true;
+					document.getElementById("any_enable_" + rsp.any_enable).checked = true;
+					document.getElementById("write_enable_" + rsp.write_enable).checked = true;
+					document.getElementById("root_enable_" + rsp.root_enable).checked = true;
+					document.getElementById("ftp_userid").value = rsp.ftp_user;
+					document.getElementById("ftp_passwd").value = rsp.ftp_password;
+					document.getElementById("user_path").value = rsp.user_path;
+					if(rsp.enable == 0) {
+						document.getElementById("ftp_rm_enable_0").disabled = true;
+						document.getElementById("ftp_rm_enable_1").disabled = true;
+						document.getElementById("any_enable_0").disabled = true;
+						document.getElementById("any_enable_1").disabled = true;
+						document.getElementById("write_enable_0").disabled = true;
+						document.getElementById("write_enable_1").disabled = true;
+						document.getElementById("root_enable_0").disabled = true;
+						document.getElementById("root_enable_1").disabled = true;
+						document.getElementById("ftp_userid").disabled = true;
+						document.getElementById("ftp_passwd").disabled = true;
+						document.getElementById("user_path").disabled = true;
+					}
+				}
+			});
+		}
+
+		function set_ftp() {
+			var enable;
+			var rm_enable;
+			var any_enable;
+			var write_enable;
+			var root_enable;
+			if(document.getElementById("ftp_enable_0").checked == true) {
+				enable = 0;
+			}
+			if(document.getElementById("ftp_enable_1").checked == true) {
+				enable = 1;
+			}
+			if(document.getElementById("ftp_rm_enable_0").checked == true) {
+				rm_enable = 0;
+			}
+			if(document.getElementById("ftp_rm_enable_1").checked == true) {
+				rm_enable = 1;
+			}
+			if(document.getElementById("any_enable_0").checked == true) {
+				any_enable = 0;
+			}
+			if(document.getElementById("any_enable_1").checked == true) {
+				any_enable = 1;
+			}
+			if(document.getElementById("write_enable_0").checked == true) {
+				write_enable = 0;
+			}
+			if(document.getElementById("write_enable_1").checked == true) {
+				write_enable = 1;
+			}
+			if(document.getElementById("root_enable_0").checked == true) {
+				root_enable = 0;
+			}
+			if(document.getElementById("root_enable_1").checked == true) {
+				root_enable = 1;
+			}
+			ftp_userid=document.getElementById("ftp_userid").value;
+			ftp_passwd=document.getElementById("ftp_passwd").value;
+			user_path=document.getElementById("user_path").value;
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_ftp")%>', {
+				enable: enable,
+				rm_enable: rm_enable,
+				any_enable: any_enable,
+				write_enable: write_enable,
+				root_enable: root_enable,
+				ftp_user: ftp_userid,
+				ftp_password: ftp_passwd,
+				user_path: user_path
+			}, function(rsp) {
+				if(rsp.code == 0) {
+					location.reload(1);
+				} else {
+					alert(rsp.msg);
+				}
+			});
+			return xhr;
+		}
+
+		function change() {
+			if(document.getElementById("ftp_enable_0").checked == true) {
+				document.getElementById("ftp_rm_enable_0").disabled = true;
+				document.getElementById("ftp_rm_enable_1").disabled = true;
+				document.getElementById("any_enable_0").disabled = true;
+				document.getElementById("any_enable_1").disabled = true;
+				document.getElementById("write_enable_0").disabled = true;
+				document.getElementById("write_enable_1").disabled = true;
+				document.getElementById("root_enable_0").disabled = true;
+				document.getElementById("root_enable_1").disabled = true;
+				document.getElementById("ftp_userid").disabled = true;
+				document.getElementById("ftp_passwd").disabled = true;
+				document.getElementById("user_path").disabled = true;
+			} else {
+				document.getElementById("ftp_rm_enable_0").disabled = false;
+				document.getElementById("ftp_rm_enable_1").disabled = false;
+				document.getElementById("any_enable_0").disabled = false;
+				document.getElementById("any_enable_1").disabled = false;
+				document.getElementById("write_enable_0").disabled = false;
+				document.getElementById("write_enable_1").disabled = false;
+				document.getElementById("root_enable_0").disabled = false;
+				document.getElementById("root_enable_1").disabled = false;
+				document.getElementById("ftp_userid").disabled = false;
+				document.getElementById("ftp_passwd").disabled = false;
+				document.getElementById("user_path").disabled = false;
+			}
+		}
+	</script>
+
+</html>

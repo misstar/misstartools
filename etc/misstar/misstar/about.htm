@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+		<html xmlns:wb="http://open.weibo.com/wb">
+		<script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="mMain">
+						<div class="mainBox" style="height:auto!important;height:550px;min-height:550px;">
+							<div>
+								<div>
+									<div>
+										<h3><%:关于我们%>:</h3>
+										<h4>作者：Starry、孤瘾 ๓</h4>
+										<h4>邮箱：admin@misstar.com</h4>
+										<h4>微博:<wb:follow-button uid="1736055677" type="gray_3" width="1000" height="24" ></wb:follow-button></h4>
+										<h4>QQ群：<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=4d98dcf63441cd34accd7f38c04657ab05895620976efd3cf86de551b5be16ea"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="WOL" title="WOL"></a></h4>
+										<h4>特别感谢参与测试的群友：</h4>
+										<h4>哲♂学、小白、无痕、告别(了)突然</h4>
+									</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © 2013-2015 Misstar Tools，并保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+
+		</div>
+		<%include("web/inc/footer")%>
+	</body>
+	<script>
+		document.getElementById("li_about").className = 'cur';
+	</script>
+
+	</html>

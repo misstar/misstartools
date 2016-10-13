@@ -1,0 +1,131 @@
+#!/bin/ash
+START=99
+STOP=99
+
+case "$1" in
+"vsftpd")
+	olduser=`uci get misstar.vsftpd.ftp_user`
+	sed -i "/$olduser/"d /etc/passwd
+	sed -i "/$olduser/"d /etc/shadow
+	sed -i "/$2/"d /etc/passwd
+	sed -i "/$2/"d /etc/shadow
+	echo "$2:*:10086:10086:$2:$4:/bin/false" >> /etc/passwd
+	echo "$2:*:0:0:99999:7:::" >> /etc/shadow
+	echo -e "$3\n$3" | passwd $2
+	uci set misstar.vsftpd.ftp_user=$2
+	uci set misstar.vsftpd.ftp_password=$3
+	uci commit misstar
+	 ;;
+"adm")
+	case "$2" in
+		"start")
+			echo "/etc/misstar/scripts/adm start"
+			;;
+		"stop")
+			echo "/etc/misstar/scripts/adm stop"
+			;;
+		"status")
+			status=`ps | grep adm | grep misstar | wc -l`
+			echo $status
+	 esac
+	 ;;
+"sshd")
+	case "$2" in
+		"enable")
+			uci set firewall.sshd=rule
+			uci set firewall.sshd.src=wan
+			uci set firewall.sshd.proto=tcp
+			uci set firewall.sshd.target=ACCEPT
+			uci set firewall.sshd.family=ipv4
+			uci set firewall.sshd.dest_port=22
+			uci commit firewall
+			/etc/init.d/firewall restart
+			;;
+		"disable")
+			uci delete firewall.sshd
+			uci commit firewall
+			;;
+		"status")
+			status=`uci show firewall | grep sshd | wc -l`
+			echo $status
+	 esac
+	 ;;
+"web")
+	case "$2" in
+		"enable")
+			sed -i '/set \$finalvar \"\$canproxy \$isluci\"/i\    set \$isluci "1"; #misstar' /etc/sysapihttpd/miwifi-webinitrd.conf
+			uci set firewall.rmweb=rule
+			uci set firewall.rmweb.src=wan
+			uci set firewall.rmweb.proto=tcp
+			uci set firewall.rmweb.target=ACCEPT
+			uci set firewall.rmweb.family=ipv4
+			uci set firewall.rmweb.dest_port=8098
+			uci set firewall.aria=rule
+			uci set firewall.aria.src=wan
+			uci set firewall.aria.proto=tcp
+			uci set firewall.aria.target=ACCEPT
+			uci set firewall.aria.family=ipv4
+			uci set firewall.aria.dest_port=10086
+			uci set firewall.webshell=rule
+			uci set firewall.webshell.src=wan
+			uci set firewall.webshell.proto=tcp
+			uci set firewall.webshell.target=ACCEPT
+			uci set firewall.webshell.family=ipv4
+			uci set firewall.webshell.dest_port=4200
+			uci commit firewall
+			;;
+		"disable")
+			sed -i '/misstar/d' /etc/sysapihttpd/miwifi-webinitrd.conf
+			uci delete firewall.rmweb
+			uci delete firewall.aria
+			uci delete firewall.webshell
+			uci commit firewall
+			;;
+		"status")
+			status=`uci show firewall | grep sshd | wc -l`
+			echo $status
+	 esac
+	 ;;
+"ftp")
+	case "$2" in
+		"enable")
+			uci set firewall.vsftpd=rule
+			uci set firewall.vsftpd.src=wan
+			uci set firewall.vsftpd.proto=tcp
+			uci set firewall.vsftpd.target=ACCEPT
+			uci set firewall.vsftpd.family=ipv4
+			uci set firewall.vsftpd.dest_port=21
+			uci commit firewall
+			/etc/init.d/firewall restart
+			;;
+		"disable")
+			uci delete firewall.vsftpd
+			uci commit firewall
+			/etc/init.d/firewall restart
+			;;
+		"status")
+			status=`uci show firewall | grep vsftpd | wc -l`
+			echo $status
+	 esac
+	 ;;
+"ss")
+	case "$2" in
+		"status")
+			status=`ps | grep ss-redir | grep -v 'grep' | wc -l`
+			if [ "$status" == "1" ];then   #进程存在，已运行
+					echo -e "2\c"
+			else
+				echo -e "1\c"
+			fi
+			;;
+		"dnsstatus")
+			status=`nslookup www.youtube.com | grep 'Address 3' | wc -l`
+			if [ "$status" == "1" ]; then
+				echo -e "1\c"
+			else
+				echo -e "0\c"
+			fi
+		;;
+	 esac
+	 ;;
+esac

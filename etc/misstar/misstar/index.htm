@@ -1,0 +1,234 @@
+<%
+local last_version=luci.sys.exec("curl -s http://www.misstar.com/tools/last_version.txt | grep misstar | awk '{print $2}'")
+
+local curr_version=luci.sys.exec("uci get misstar.misstar.version")
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<%include("web/inc/head")%>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Misstar Tools - 小米路由器</title>
+		<meta name="Copyright" content="Douco Design." />
+		<meta name="viewport" content="width=1200">
+		<link href="<%=resource%>/web/luci/css/public.css" rel="stylesheet" type="text/css">
+		<link href="<%=resource%>/web/css/bc.css?v=<%=ver%>" rel="stylesheet">
+		<link href="<%=resource%>/web/css/vpn.css?v=<%=ver%>" rel="stylesheet">
+
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.min.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/global.js"></script>
+		<script type="text/javascript" src="<%=resource%>/web/luci/js/jquery.tab.js"></script>
+
+	</head>
+
+	<body onload="init();">
+		<div id="doc">
+			<%include("web/inc/header")%>
+			<!-- dcHead 结束 -->
+			<div id="start" class="start">
+				<%include("web/inc/menu")%>
+				<div id="dcMain">
+					<!-- 当前位置 -->
+					<div id="urHere">Misstar Tools</div>
+					<div id="index" class="mainBox" style="padding-top:18px;height:auto!important;height:550px;min-height:550px;">
+
+						<div id="douApi"></div>
+						<table width="100%" border="0" cellspacing="0" cellpadding="0" class="indexBoxTwo">
+							<tr>
+								<td width="65%" valign="top" class="pr">
+									<div class="indexBox">
+										<div class="boxTitle">插件状态</div>
+										<ul>
+											<table width="100%" border="0" cellspacing="0" cellpadding="7" class="tableBasic">
+												<tr>
+													<td width="120">ShadowSocks：</td>
+													<td>
+														<a href="ss" class="cueRed ml" id="ss_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">阿呆喵：</td>
+													<td>
+														<a href="adm" class="cueRed ml" id="adm_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">VSFTP：</td>
+													<td>
+														<a href="ftp" class="cueRed ml" id="ftp_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">迅雷快鸟：</td>
+													<td>
+														<a href="xlkn" class="cueRed ml" id="xlkn_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">Web：</td>
+													<td>
+														<a href="rm" class="cueRed ml" id="web_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">远程Ssh:</td>
+													<td>
+														<a href="rm" class="cueRed ml" id="ssh_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">Webshell：</td>
+													<td>
+														<a href="webshell" class="cueRed ml" id="webshell_status"></a>
+													</td>
+
+												</tr>
+												<tr>
+													<td width="120">Aria2：</td>
+													<td>
+														<a href="aria2" class="cueRed ml" id="aria2_status"></a>
+													</td>
+
+												</tr>
+											</table>
+										</ul>
+									</div>
+								</td>
+							</tr>
+						</table>
+						<div class="indexBox">
+							<div class="boxTitle">工具箱状态</div>
+							<ul>
+								<table width="100%" border="0" cellspacing="0" cellpadding="7" class="tableBasic">
+									<tr>
+										<td width="120">工具箱版本：</td>
+										<td><span id="version"><%=curr_version%></span><a id="uninstall" href="javascript:uninstall();"><b>卸载</b></a><span id="last_version" style="display: none;"><%=last_version%></span><a id="update" style="display: none;color: red;" href="javascript:update();"><b>有新版本，马上升级</b></a></td>
+
+									</tr>
+									<tr>
+										<td>版本时间：</td>
+										<td>2016-09-03</td>
+									</tr>
+									<tr>
+										<td>版本日志：</td>
+										<td>
+											<p class="cue">修复绝大部分BUG，可以正常使用</p>
+											<p class="cue"><b>新增Aria2支持</b></p>
+										</td>
+									</tr>
+								</table>
+							</ul>
+						</div>
+
+					</div>
+				</div>
+				<div class="clear"></div>
+				<div id="dcFooter">
+					<div id="footer">
+						<div class="line"></div>
+						<ul>
+							版权所有 © Misstar Tools，保留所有权利。
+						</ul>
+					</div>
+				</div>
+				<!-- dcFooter 结束 -->
+				<div class="clear"></div>
+			</div>
+			<%include("web/inc/footer")%>
+	</body>
+	<script>
+		function init() {
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_status")%>', {}, function(rsp) {
+				if(rsp.code == 0) {
+					if(rsp.ss_status==0){
+						document.getElementById("ss_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("ss_status").innerHTML  = "正在运行";
+					}
+					if(rsp.adm_status==0){
+						document.getElementById("adm_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("adm_status").innerHTML  = "正在运行";
+					}
+					if(rsp.ftp_status==0){
+						document.getElementById("ftp_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("ftp_status").innerHTML  = "正在运行";
+					}
+					if(rsp.ssh_status==0){
+						document.getElementById("ssh_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("ssh_status").innerHTML  = "正在运行";
+					}
+					if(rsp.xlkn_status==0){
+						document.getElementById("xlkn_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("xlkn_status").innerHTML  = "正在运行";
+					}
+					if(rsp.web_status==0){
+						document.getElementById("web_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("web_status").innerHTML  = "正在运行";
+					}
+					if(rsp.webshell_status==0){
+						document.getElementById("webshell_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("webshell_status").innerHTML  = "正在运行";
+					}
+					if(rsp.aria2_status==0){
+						document.getElementById("aria2_status").innerHTML  = "未运行";
+					}else{
+						document.getElementById("aria2_status").innerHTML  = "正在运行";
+					}
+				}
+			});
+		}
+	var curr_version=document.getElementById('version').innerHTML;
+	var last_version=document.getElementById('last_version').innerHTML;
+	if(curr_version != last_version)
+	{
+		document.getElementById("update").style.display="block";
+	}
+	function update(){
+		if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")){
+                $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "update")%>',  function(rsp){
+                if (rsp.code == 0) {
+                    setTimeout( function(){
+                        alert("升级成功，路由器正在重启。");
+                },2000);
+                } else {
+                    alert( rsp.msg );
+                    location.reload( 1 );
+                }
+
+            });
+		}
+		else
+			return;
+	}
+	function uninstall(){
+		if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")){
+                $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "uninstall")%>',  function(rsp){
+                if (rsp.code == 0) {
+                    setTimeout( function(){
+                        alert("卸载成功，路由器正在重启。");
+                },2000);
+                } else {
+                    alert( rsp.msg );
+                }
+
+            });
+		}
+		else
+			return;
+	}
+	</script>
+
+</html>

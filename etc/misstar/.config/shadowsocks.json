@@ -1,0 +1,9 @@
+{
+  "server":"hk01.veryhosts.com",
+  "server_port":26422,
+  "local_port":1081,
+  "local_address":"0.0.0.0",
+  "password":"Chxb2887979",
+  "timeout":600,
+  "method":"rc4-md5"
+}

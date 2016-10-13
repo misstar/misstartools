@@ -1,0 +1,9 @@
+#!/bin/ash
+START=99
+STOP=99
+
+#检查重启服务
+/etc/misstar/scripts/adm restart
+/etc/misstar/scripts/vsftpd restart
+/etc/misstar/scripts/webshell restart
+/etc/misstar/scripts/ss restart

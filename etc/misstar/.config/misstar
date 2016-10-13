@@ -1,0 +1,39 @@
+
+config config 'misstar'
+	option version '1.3.0'
+
+config config 'ss'
+	option ss_local_port '1081'
+	option ss_server 'hk01.veryhosts.com'
+	option ss_server_port '12345'
+	option ss_password 'password'
+	option ss_method 'rc4-md5'
+	option ss_mode 'gfwlist'
+	option enable '0'
+
+config config 'adm'
+	option enable '0'
+	option mode 'videomode'
+
+config config 'web'
+	option enable '0'
+
+config config 'sshd'
+	option enable '0'
+
+config config 'webshell'
+	option enable '0'
+
+config config 'vsftpd'
+	option rm_enable '0'
+	option root_enable '0'
+	option any_enable '0'
+	option write_enable '0'
+	option ftp_user 'test'
+	option enable '0'
+	option ftp_password 'password'
+	option user_path '/'
+
+config config 'aria2'
+	option enable '0'
+	option user_path '/tmp'
