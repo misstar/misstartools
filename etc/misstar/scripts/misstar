@@ -119,8 +119,8 @@ case "$1" in
 			fi
 			;;
 		"dnsstatus")
-			status=`nslookup www.youtube.com | grep 'Address 3' | wc -l`
-			if [ "$status" == "1" ]; then
+			status=`nslookup www.youtube.com > /dev/null 2>&1 ; echo $?`
+			if [ "$status" == "0" ]; then
 				echo -e "1\c"
 			else
 				echo -e "0\c"

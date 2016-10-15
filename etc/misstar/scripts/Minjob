@@ -6,7 +6,7 @@ result=$(ps | grep adm | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/adm start
+	/etc/misstar/scripts/adm restart
 	
 fi
 
@@ -14,7 +14,7 @@ result=$(ps | grep vsftpd | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/vsftpd start
+	/etc/misstar/scripts/vsftpd restart
 	
 fi
 
@@ -22,7 +22,7 @@ result=$(ps | grep webshell | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/webshell start
+	/etc/misstar/scripts/webshell restart
 	
 fi
 
@@ -30,7 +30,7 @@ result=$(ps | grep ss-redir | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/ss start
+	/etc/misstar/scripts/ss restart
 	
 fi
 
@@ -38,6 +38,6 @@ result=$(ps | grep aria2c | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/aria2 start
+	/etc/misstar/scripts/aria2 restart
 	
 fi
