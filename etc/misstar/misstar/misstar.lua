@@ -296,10 +296,14 @@ function get_ss()
 	ss_info.enable = uci:get("misstar","ss","enable")
 	
 	dns_info.pac_no=LuciUtil.exec("cat /etc/misstar/.config/pac.conf  | grep server | awk -F '/' '{print $2}' | sed 's/^.//' | wc -l")
-	dns_info.pac_list=LuciUtil.exec("cat /etc/misstar/.config/pac.conf  | grep server | awk -F '/' '{print $2}' | sed 's/^.//' ")
 	
+	dns_info.pac_no_customize=LuciUtil.exec("cat /etc/misstar/.config/pac_customize.conf | wc -l")
+	dns_info.pac_customize=LuciUtil.exec("cat /etc/misstar/.config/pac_customize.conf")
+
 	dns_info.chn_no=LuciUtil.exec("cat /etc/misstar/.config/chnroute.txt | wc -l")
-	dns_info.chn_list=LuciUtil.exec("cat /etc/misstar/.config/chnroute.txt  ")
+	
+	dns_info.chn_no_customize=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt | wc -l")
+	dns_info.chn_list=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt  ")
 	
 	result["code"]=0
 	result["ss_info"]=ss_info
