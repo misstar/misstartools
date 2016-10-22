@@ -2,22 +2,31 @@
 START=99
 STOP=99
 
-result=$(ps | grep adm | grep -v grep | wc -l)
+App_enable=$(uci get misstar.adm.enable)
+if [ "$App_enable" = '1' ];then
+	result=$(ps | grep adm | grep -v grep | wc -l)
 
-if [ "$result" == "0" ]; then
+	if [ "$result" == "0" ]; then
 
-	/etc/misstar/scripts/adm restart
+		/etc/misstar/scripts/adm restart
 	
+	fi
 fi
 
-result=$(ps | grep vsftpd | grep -v grep | wc -l)
 
-if [ "$result" == "0" ]; then
+App_enable=$(uci get misstar.vsftpd.enable)
+if [ "$App_enable" = '1' ];then
+	result=$(ps | grep vsftpd | grep -v grep | wc -l)
 
-	/etc/misstar/scripts/vsftpd restart
+	if [ "$result" == "0" ]; then
+
+		/etc/misstar/scripts/vsftpd restart
 	
+	fi
 fi
 
+App_enable=$(uci get misstar.webshell.enable)
+if [ "$App_enable" = '1' ];then
 result=$(ps | grep webshell | grep -v grep | wc -l)
 
 if [ "$result" == "0" ]; then
@@ -25,19 +34,84 @@ if [ "$result" == "0" ]; then
 	/etc/misstar/scripts/webshell restart
 	
 fi
-
-result=$(ps | grep ss-redir | grep -v grep | wc -l)
-
-if [ "$result" == "0" ]; then
-
-	/etc/misstar/scripts/ss restart
-	
 fi
 
-result=$(ps | grep aria2c | grep -v grep | wc -l)
-
-if [ "$result" == "0" ]; then
-
-	/etc/misstar/scripts/aria2 restart
+App_enable=$(uci get misstar.ss.enable)
+if [ "$App_enable" = '1' ];then
+	result=$(ps | grep -E "ss-redir|ssr-redir" | grep -v 'grep' | wc -l)
+	appname=misstar
 	
+	if [ "$result" == "0" ]; then
+		echo 22222
+		/etc/misstar/scripts/ss restart
+	else
+		node=$(uci get .ss.node)
+		server2=$(uci get $appname.ss.ss_server_2)
+		
+		node_switch=$(uci get $appname.ss.node_switch)
+		if [ "$node" = "1" ]; then
+			localport=$(uci get misstar.ss.ss_local_port_1)
+			DNS_PORT=`expr $localport + 1`
+			http_status=`curl  -s -w %{http_code} https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/openbookproject/OpenBookProject-default.png -k -o /dev/null --socks5 127.0.0.1:$DNS_PORT`
+			if [ "$http_status" != "200" -a "$node_switch" == "1" ];then
+				uci set misstar.ss.node=2
+				uci commit misstar
+				/etc/misstar/scripts/ss restart
+			fi
+		elif [ "$server2" != "" ];then	
+			node=1
+			local_ip=0.0.0.0
+			ss_server_ip=$(uci get $appname.ss.ss_server_$node)
+			ss_server_port=$(uci get $appname.ss.ss_server_port_$node)
+			ss_server_password=$(uci get $appname.ss.ss_password_$node)
+			ss_local_port=$(uci get $appname.ss.ss_local_port_$node)
+			ss_server_method=$(uci get $appname.ss.ss_method_$node)
+			ssr_enable=$(uci get $appname.ss.ssr_enable_$node)
+			ssr_protocol=$(uci get $appname.ss.ssr_protocol_$node)
+			ssr_obfs=$(uci get $appname.ss.ssr_obfs_$node)
+			Hardware_ID=$(uname -a | grep arm | wc -l)
+			if [ "$Hardware_ID" = '0' ];then
+				if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
+					echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
+					exit
+				fi
+			fi
+
+			if [ "$Hardware_ID" = '1' ];then
+				Hardware_model="arm"
+			else
+				Hardware_model="mips"
+			fi 
+			DNS_PORT=`expr $ss_local_port + 3`
+			LOCALPATH=/etc/misstar/$Hardware_model/ss-local
+			DNSCONF=/tmp/dns2socks.conf
+			if [ "$ssr_enable" = '0' ];then
+				echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $DNSCONF
+			fi	
+			if [ "$ssr_enable" = '1' ];then
+				LOCALPATH=/etc/misstar/$Hardware_model/ssr-local
+				echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'",\n  "protocol":"'$ssr_protocol'",\n  "obfs":"'$ssr_obfs'"\n}' > $DNSCONF
+			fi
+			$LOCALPATH -c $DNSCONF &
+			http_status=`curl  -s -w %{http_code} https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/openbookproject/OpenBookProject-default.png -k -o /dev/null --socks5 127.0.0.1:$DNS_PORT`
+			if [ "$http_status" = "200" ];then
+				uci set misstar.ss.node=1
+				uci commit misstar
+				killall -9 $LOCALPATH
+				/etc/misstar/scripts/ss restart
+			fi
+		fi
+	fi
+fi
+
+
+App_enable=$(uci get misstar.aria2.enable)
+if [ "$App_enable" = '1' ];then
+	result=$(ps | grep aria2c | grep -v grep | wc -l)
+
+	if [ "$result" == "0" ]; then
+
+		/etc/misstar/scripts/aria2 restart
+	
+	fi
 fi

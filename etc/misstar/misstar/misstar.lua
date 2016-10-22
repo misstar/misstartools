@@ -10,21 +10,18 @@ function index()
     page.sysauth = "admin"
     page.sysauth_authenticator = "jsonauth"
     page.index = true
-    entry({"api", "misstar", "ss"}, call("ssInfo"), (""), 401)
-    entry({"api", "misstar", "ss_status"}, call("ssStatus"), (""), 402)
-    entry({"api", "misstar", "ss_switch"}, call("ssSwitch"), (""), 403)
-    entry({"api", "misstar", "set_ss"}, call("setSs"), (""), 404)
-    entry({"api", "misstar", "del_ss"}, call("delSs"), (""), 405)
-    entry({"api", "misstar", "set_ssauto"}, call("setSsAuto"), (""), 406)
+
     entry({"api", "misstar", "update"}, call("mis_update"), (""), 407)
-    entry({"api", "misstar", "uninstall"}, call("mis_uninstall"), (""), 408)
-    
-    entry({"api", "misstar", "save_ss"}, call("save_ss"), (""), 409)
-    
+    entry({"api", "misstar", "uninstall"}, call("mis_uninstall"), (""), 408)    
     
     entry({"api", "misstar", "get_ss"}, call("get_ss"), (""), 410)
     entry({"api", "misstar", "set_ssdns"}, call("set_ssdns"), (""), 411)
     entry({"api", "misstar", "get_ssstatus"}, call("get_ssstatus"), (""), 412)
+    entry({"api", "misstar", "add_pac"}, call("add_pac"), (""), 413)
+    entry({"api", "misstar", "del_pac"}, call("del_pac"), (""), 414)
+    entry({"api", "misstar", "add_white"}, call("add_white"), (""), 415)
+    entry({"api", "misstar", "del_white"}, call("del_white"), (""), 416)
+
     
     entry({"api", "misstar", "get_adm"}, call("get_adm"), (""), 420)
     entry({"api", "misstar", "set_adm"}, call("set_adm"), (""), 421)
@@ -52,165 +49,6 @@ local XQErrorUtil = require("xiaoqiang.util.XQErrorUtil")
 local uci = require("luci.model.uci").cursor()
 local LuciUtil = require("luci.util")
 
-function ssInfo()
-    local result = {}
-    local list = getSSList()
-    local current = getSSInfo("interface")
-    result["code"] = 0
-    result["current"] = current
-    result["list"] = list
-    LuciHttp.write_json(result)
-end
-
-function getSSInfo(interface)
-    local info = {
-        proto = "",
-        server = "",
-        username = "",
-        password = "",
-        auto = "0",
-        id = ""
-    }
-    local ss = uci:get("ss-redir","misstar","ss_server_name")
-    local auto = uci:get("ss-redir","misstar","auto")
-    if ss then
-        info.id = ss
-        info.auto=auto
-    end
-    return info
-end
-
-
-function getSSList()
-    local result = {}
-    uci:foreach("ss-redir", "interface",
-        function(s)
-            local item = {
-                ["ss_server"] = s.ss_server,
-                ["ss_server_port"] = s.ss_server_port,
-                ["ss_password"] = s.ss_password,
-                ["ss_method"] = s.ss_method,
-                ["id"] = s.id
-            }
-            table.insert(result, item)
-            -- result[s.id] = item
-        end
-    )
-    return result
-end
-
-
-
-function setSs()
-    local code = 0
-    local result = {}
-    local ss_server = LuciHttp.formvalue("ss_server")
-    local ss_server_port = LuciHttp.formvalue("ss_server_port")
-    local ss_password = LuciHttp.formvalue("ss_password")
-    local ss_method = LuciHttp.formvalue("ss_method")
-    local auto = LuciHttp.formvalue("auto")
-    local id = LuciHttp.formvalue("id")
-    local set = true
-    local XQCryptoUtil = require("xiaoqiang.util.XQCryptoUtil")
-    if id then
-    	uci:delete("ss-redir", id)
-    	local id = XQCryptoUtil.md5Str(ss_server)
-    	LuciUtil.exec("uci set ss-redir." ..id.. "=interface >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server=" ..ss_server.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server_port=" ..ss_server_port.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_password=" ..ss_password.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_method=" ..ss_method.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".id=" ..id.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log")
-    	set=true
-    else
-    	local id = XQCryptoUtil.md5Str(ss_server)
-    	LuciUtil.exec("uci set ss-redir." ..id.. "=interface >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server=" ..ss_server.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server_port=" ..ss_server_port.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_password=" ..ss_password.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_method=" ..ss_method.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".id=" ..id.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log")
-    	set=true
-    end
-    if set then
-        code = 0
-    else
-        code = 1583
-    end
-    result["code"] = code
-    if result.code ~= 0 then
-        result["msg"] = XQErrorUtil.getErrorMessage(result.code)
-    end
-    LuciHttp.write_json(result)
-end
-
-
-function setSsAuto()
-    local code = 0
-    local result = {}
-    local auto = LuciHttp.formvalue("auto")
-    auto = tonumber(auto)
-    if auto and auto == 1 then
-        LuciUtil.exec("/etc/misstar/scripts/ss.sh enable")
-    else
-        LuciUtil.exec("/etc/misstar/scripts/ss.sh disable")
-    end
-	LuciUtil.exec("uci set ss-redir.misstar.auto=" ..auto)
-    LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log") 
-    result["code"] = code
-    LuciHttp.write_json(result)
-end
-
-function delSs()
-    local result = {}
-    local id = LuciHttp.formvalue("id")
-    uci:delete("ss-redir", id)
-    uci:commit("ss-redir")
-    result["code"] = 0
-    LuciHttp.write_json(result)
-end
-
-
-
--- status: 0 connected 1 connecting 2 failed 3 close 4 none
-function ssStatus()
-    local status = LuciUtil.exec("/etc/misstar/scripts/ss.sh status")
-    os.execute("echo " ..status.. " >> /tmp/ss-redir.log")
-    local result = {}
-    result["status"]=status
-    result["code"] = 0
-    LuciHttp.write_json(result)
-end
-
-
-
-    
- function ssSwitch()
-    local code = 0
-    local result = {}
-    local conn = tonumber(LuciHttp.formvalue("conn"))
-    local id = LuciHttp.formvalue("id")
-    local result = {}
-    result["code"] = 1
-    if conn and conn == 1 then
-    	LuciUtil.exec("uci set ss-redir.misstar.ss_server_name=" ..id.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log")
-        os.execute("/bin/rm /tmp/ss.stat.msg.last >/dev/null 2>/dev/null")
-        os.execute("/etc/misstar/scripts/ss.sh stop")
-        if os.execute("/etc/misstar/scripts/ss.sh start") == 0  then
-        	result["code"] = 0
-        end
-    else
-        os.execute("/bin/rm /tmp/ss.stat.msg.last >/dev/null 2>/dev/null")
-        if os.execute("/etc/misstar/scripts/ss.sh stop") == 0 then 
-        	result["code"] = 0
-        end
-    end
-    LuciHttp.write_json(result)
-end  
-
 
 function mis_update()
     local result = {}
@@ -231,79 +69,42 @@ function mis_uninstall()
 end
 
 
-function string.starts(String,Start)
-   return string.sub(String,1,string.len(Start))==Start
-end
-
-
-
-function save_ss()
-    local code = 0
-    local result = {}
-    local ss_server = LuciHttp.formvalue("ss_server")
-    local ss_server_port = LuciHttp.formvalue("ss_server_port")
-    local ss_password = LuciHttp.formvalue("ss_password")
-    local ss_method = LuciHttp.formvalue("ss_method")
-    local ss_mode = LuciHttp.formvalue("ss_mode")
-    local auto = LuciHttp.formvalue("auto")
-    local id = LuciHttp.formvalue("id")
-    local set = true
-    local XQCryptoUtil = require("xiaoqiang.util.XQCryptoUtil")
-    if id then
-    	uci:delete("ss-redir", id)
-    	local id = XQCryptoUtil.md5Str(ss_server)
-    	LuciUtil.exec("uci set ss-redir." ..id.. "=interface >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server=" ..ss_server.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server_port=" ..ss_server_port.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_password=" ..ss_password.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_method=" ..ss_method.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".id=" ..id.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log")
-    	set=true
-    else
-    	local id = XQCryptoUtil.md5Str(ss_server)
-    	LuciUtil.exec("uci set ss-redir." ..id.. "=interface >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server=" ..ss_server.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci set ss-redir." ..id.. ".ss_server_port=" ..ss_server_port.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_password=" ..ss_password.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".ss_method=" ..ss_method.. " >> /tmp/ss-redir.log")
-    	LuciUtil.exec("uci set ss-redir." ..id.. ".id=" ..id.. " >> /tmp/ss-redir.log")
-		LuciUtil.exec("uci commit ss-redir >> /tmp/ss-redir.log")
-    	set=true
-    end
-    if set then
-        code = 0
-    else
-        code = 1583
-    end
-    result["code"] = code
-    if result.code ~= 0 then
-        result["msg"] = XQErrorUtil.getErrorMessage(result.code)
-    end
-    LuciHttp.write_json(result)
-end
 
 function get_ss()
 	local ss_info={}
 	local dns_info={}
 	local result = {}
-	ss_info.ss_server = uci:get("misstar","ss","ss_server")
-	ss_info.ss_local_port = uci:get("misstar","ss","ss_local_port")
-	ss_info.ss_server_port = uci:get("misstar","ss","ss_server_port")
-	ss_info.ss_mode = uci:get("misstar","ss","ss_mode")
-	ss_info.ss_method = uci:get("misstar","ss","ss_method")
-	ss_info.ss_passwd = uci:get("misstar","ss","ss_password")
 	ss_info.enable = uci:get("misstar","ss","enable")
+	ss_info.ss_mode = uci:get("misstar","ss","ss_mode")
+	ss_info.node_switch = uci:get("misstar","ss","node_switch")
+	
+	ss_info.ss_server_1 = uci:get("misstar","ss","ss_server_1")
+	ss_info.ss_local_port_1 = uci:get("misstar","ss","ss_local_port_1")
+	ss_info.ss_server_port_1 = uci:get("misstar","ss","ss_server_port_1")
+	ss_info.ss_method_1 = uci:get("misstar","ss","ss_method_1")
+	ss_info.ss_passwd_1 = uci:get("misstar","ss","ss_password_1")
+	ss_info.ssr_enable_1=uci:get("misstar","ss","ssr_enable_1")
+	ss_info.ssr_protocol_1 = uci:get("misstar","ss","ssr_protocol_1")
+	ss_info.ssr_obfs_1 = uci:get("misstar","ss","ssr_obfs_1")
+	
+	ss_info.ss_server_2 = uci:get("misstar","ss","ss_server_2")
+	ss_info.ss_local_port_2 = uci:get("misstar","ss","ss_local_port_2")
+	ss_info.ss_server_port_2 = uci:get("misstar","ss","ss_server_port_2")
+	ss_info.ss_method_2 = uci:get("misstar","ss","ss_method_2")
+	ss_info.ss_passwd_2 = uci:get("misstar","ss","ss_password_2")
+	ss_info.ssr_enable_2=uci:get("misstar","ss","ssr_enable_2")
+	ss_info.ssr_protocol_2 = uci:get("misstar","ss","ssr_protocol_2")
+	ss_info.ssr_obfs_2 = uci:get("misstar","ss","ssr_obfs_2")
 	
 	dns_info.pac_no=LuciUtil.exec("cat /etc/misstar/.config/pac.conf  | grep server | awk -F '/' '{print $2}' | sed 's/^.//' | wc -l")
 	
-	dns_info.pac_no_customize=LuciUtil.exec("cat /etc/misstar/.config/pac_customize.conf | wc -l")
+	dns_info.pac_no_customize=LuciUtil.exec("cat /etc/misstar/.config/pac_customize.conf | grep -v '^$' | wc -l")
 	dns_info.pac_customize=LuciUtil.exec("cat /etc/misstar/.config/pac_customize.conf")
 
 	dns_info.chn_no=LuciUtil.exec("cat /etc/misstar/.config/chnroute.txt | wc -l")
 	
-	dns_info.chn_no_customize=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt | wc -l")
-	dns_info.chn_list=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt  ")
+	dns_info.chn_no_customize=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt | grep -v '^$' | wc -l")
+	dns_info.chn_list=LuciUtil.exec("cat /etc/misstar/.config/chnroute_customize.txt")
 	
 	result["code"]=0
 	result["ss_info"]=ss_info
@@ -316,6 +117,7 @@ function get_ssstatus()
 	local result = {}
 	ss_status.ss_status=LuciUtil.exec("/etc/misstar/scripts/misstar ss status")
 	ss_status.ss_dnsstatus=LuciUtil.exec("/etc/misstar/scripts/misstar ss dnsstatus")
+	ss_status.ss_node=uci:get("misstar","ss","node")
 	result["code"]=0
 	result["ss_status"]=ss_status
 	LuciHttp.write_json(result)
@@ -325,26 +127,56 @@ end
 function set_ssdns()
 	local code = 0
     local result = {}
-    local ss_server = LuciHttp.formvalue("ss_server")
-    local ss_server_port = LuciHttp.formvalue("ss_port")
-    local ss_passwd = LuciHttp.formvalue("ss_passwd")
-    local ss_method = LuciHttp.formvalue("ss_method")
-    local ss_mode = LuciHttp.formvalue("ss_mode")
     local ss_enable = LuciHttp.formvalue("ss_enable")
-    local ss_local_port = LuciHttp.formvalue("ss_local_port")
+    local ss_mode = LuciHttp.formvalue("ss_mode")
+    local node_switch = LuciHttp.formvalue("node_switch")
+    
+    local ss_server_1 = LuciHttp.formvalue("ss_server_1")
+    local ss_server_port_1 = LuciHttp.formvalue("ss_server_port_1")
+    local ss_passwd_1 = LuciHttp.formvalue("ss_passwd_1")
+    local ss_method_1 = LuciHttp.formvalue("ss_method_1") 
+    local ss_local_port_1 = LuciHttp.formvalue("ss_local_port_1")
+    local ssr_enable_1 = LuciHttp.formvalue("ssr_enable_1")
+    local ssr_protocol_1 = LuciHttp.formvalue("ssr_protocol_1")
+    local ssr_obfs_1 = LuciHttp.formvalue("ssr_obfs_1")
+    
+    local ss_server_2 = LuciHttp.formvalue("ss_server_2")
+    local ss_server_port_2 = LuciHttp.formvalue("ss_server_port_2")
+    local ss_passwd_2 = LuciHttp.formvalue("ss_passwd_2")
+    local ss_method_2 = LuciHttp.formvalue("ss_method_2") 
+    local ss_local_port_2 = LuciHttp.formvalue("ss_local_port_2")
+    local ssr_enable_2 = LuciHttp.formvalue("ssr_enable_2")
+    local ssr_protocol_2 = LuciHttp.formvalue("ssr_protocol_2")
+    local ssr_obfs_2 = LuciHttp.formvalue("ssr_obfs_2")
+    
     local set = true
     
-    LuciUtil.exec("uci set misstar.ss.enable=" ..ss_enable.. " >> /tmp/ss-redir.log")
-	LuciUtil.exec("uci set misstar.ss.ss_server=" ..ss_server.. " >> /tmp/ss-redir.log")
-    LuciUtil.exec("uci set misstar.ss.ss_server_port=" ..ss_server_port.. " >> /tmp/ss-redir.log")
-    LuciUtil.exec("uci set misstar.ss.ss_password=" ..ss_passwd.. " >> /tmp/ss-redir.log")
-    LuciUtil.exec("uci set misstar.ss.ss_method=" ..ss_method.. " >> /tmp/ss-redir.log")
-    LuciUtil.exec("uci set misstar.ss.ss_local_port=" ..ss_local_port.. " >> /tmp/ss-redir.log")
-    LuciUtil.exec("uci set misstar.ss.ss_mode=" ..ss_mode.. " >> /tmp/ss-redir.log")
+    LuciUtil.exec("uci set misstar.ss.enable=" ..ss_enable)
+    LuciUtil.exec("uci set misstar.ss.ss_mode=" ..ss_mode)
+    LuciUtil.exec("uci set misstar.ss.node_switch=" ..node_switch)
+    
+	LuciUtil.exec("uci set misstar.ss.ss_server_1=" ..ss_server_1)
+    LuciUtil.exec("uci set misstar.ss.ss_server_port_1=" ..ss_server_port_1)
+    LuciUtil.exec("uci set misstar.ss.ss_password_1=" ..ss_passwd_1)
+    LuciUtil.exec("uci set misstar.ss.ss_method_1=" ..ss_method_1)
+    LuciUtil.exec("uci set misstar.ss.ss_local_port_1=" ..ss_local_port_1)
+    LuciUtil.exec("uci set misstar.ss.ssr_enable_1=" ..ssr_enable_1)
+    LuciUtil.exec("uci set misstar.ss.ssr_protocol_1=" ..ssr_protocol_1)
+    LuciUtil.exec("uci set misstar.ss.ssr_obfs_1=" ..ssr_obfs_1)
+    
+    LuciUtil.exec("uci set misstar.ss.ss_server_2=" ..ss_server_2)
+    LuciUtil.exec("uci set misstar.ss.ss_server_port_2=" ..ss_server_port_2)
+    LuciUtil.exec("uci set misstar.ss.ss_password_2=" ..ss_passwd_2)
+    LuciUtil.exec("uci set misstar.ss.ss_method_2=" ..ss_method_2)
+    LuciUtil.exec("uci set misstar.ss.ss_local_port_2=" ..ss_local_port_2)
+    LuciUtil.exec("uci set misstar.ss.ssr_enable_2=" ..ssr_enable_2)
+    LuciUtil.exec("uci set misstar.ss.ssr_protocol_2=" ..ssr_protocol_2)
+    LuciUtil.exec("uci set misstar.ss.ssr_obfs_2=" ..ssr_obfs_2)
+    
 
-	LuciUtil.exec("uci commit misstar >> /tmp/ss-redir.log")
+	LuciUtil.exec("uci commit misstar ")
 	
-	LuciUtil.exec("/etc/misstar/scripts/ss restart >> /tmp/ss-redir.log")
+	LuciUtil.exec("/etc/misstar/scripts/ss restart ")
 	
     set=true
     
@@ -360,6 +192,54 @@ function set_ssdns()
     LuciHttp.write_json(result)
 end
 
+function add_pac()
+	local code = 0
+	local result = {}
+	local address=LuciHttp.formvalue("address")
+	code=LuciUtil.exec("/etc/misstar/scripts/misstar ss addpac " ..address)
+	result["code"] = code
+	if result.code ~= 0 then
+        result["msg"] = "添加失败。"
+    end
+    LuciHttp.write_json(result)
+end
+
+function del_pac()
+	local code = 0
+	local result = {}
+	local address=LuciHttp.formvalue("address")
+	code=LuciUtil.exec("/etc/misstar/scripts/misstar ss delpac " ..address)
+	result["code"] = code
+	if result.code ~= 0 then
+        result["msg"] = "删除失败。"
+    end
+    LuciHttp.write_json(result)
+end
+
+function add_white()
+	local code = 0
+	local result = {}
+	local address=LuciHttp.formvalue("address")
+	code=LuciUtil.exec("/etc/misstar/scripts/misstar ss addwhite " ..address)
+	result["code"] = code
+	if result.code ~= 0 then
+        result["msg"] = "添加失败。"
+    end
+    LuciHttp.write_json(result)
+end
+
+
+function del_white()
+	local code = 0
+	local result = {}
+	local address=LuciHttp.formvalue("address")
+	code=LuciUtil.exec("/etc/misstar/scripts/misstar ss delwhite " ..address)
+	result["code"] = code
+	if result.code ~= 0 then
+        result["msg"] = "删除失败。"
+    end
+    LuciHttp.write_json(result)
+end
 
 function set_adm()
     local code = 0
@@ -369,8 +249,8 @@ function set_adm()
     local adm_mode=LuciHttp.formvalue("adm_mode")
 	LuciUtil.exec("uci set misstar.adm.enable=" ..adm_enable_switch.. "")
 	LuciUtil.exec("uci set misstar.adm.mode=" ..adm_mode.. "")	
-	LuciUtil.exec("uci commit misstar >> /tmp/ss-redir.log")
-	LuciUtil.exec("/etc/misstar/scripts/adm restart >> /tmp/ss-redir.log")
+	LuciUtil.exec("uci commit misstar ")
+	LuciUtil.exec("/etc/misstar/scripts/adm restart ")
 	set=ture
 	if set then
         code = 0
@@ -406,20 +286,14 @@ function set_rm()
 	LuciUtil.exec("uci set misstar.web.enable=" ..web_enable_switch.. "")
 	LuciUtil.exec("uci set misstar.sshd.enable=" ..sshd_enable_switch.. "")
 	LuciUtil.exec("uci commit misstar")
-	LuciUtil.exec("echo " ..sshd_enable_switch..  " >> /tmp/ss-redir.log")
 	if web_enable_switch then
-		LuciUtil.exec("echo " ..sshd_enable_switch.. " >> /tmp/ss-redir.log")
 		LuciUtil.exec("/etc/misstar/scripts/misstar web enable")
 	else
-		LuciUtil.exec("echo " ..sshd_enable_switch.. " >> /tmp/ss-redir.log")
 		LuciUtil.exec("/etc/misstar/scripts/misstar web disable")
 	end
-	LuciUtil.exec("echo " ..sshd_enable_switch.. " >> /tmp/ss-redir.log")
 	if sshd_enable_switch then
-		LuciUtil.exec("echo " ..sshd_enable_switch.. " >> /tmp/ss-redir.log")
 		LuciUtil.exec("/etc/misstar/scripts/misstar sshd enable")
 	else
-		LuciUtil.exec("echo " ..sshd_enable_switch.. " >> /tmp/ss-redir.log")
 		LuciUtil.exec("/etc/misstar/scripts/misstar sshd disable")
 	end
 	
@@ -457,8 +331,8 @@ function set_webshell()
     local set=false
     local webshell_enable_switch=LuciHttp.formvalue("webshell_enable_switch")
 	LuciUtil.exec("uci set misstar.webshell.enable=" ..webshell_enable_switch)
-	LuciUtil.exec("uci commit misstar >> /tmp/ss-redir.log")
-	LuciUtil.exec("/etc/misstar/scripts/webshell restart >> /tmp/ss-redir.log")
+	LuciUtil.exec("uci commit misstar ")
+	LuciUtil.exec("/etc/misstar/scripts/webshell restart ")
 	
 	set=ture
 	if set then
@@ -574,8 +448,8 @@ function set_aria2()
     local user_path=LuciHttp.formvalue("user_path")
 	LuciUtil.exec("uci set misstar.aria2.enable=" ..aria2_enable_switch.. "")
 	LuciUtil.exec("uci set misstar.aria2.user_path=" ..user_path.. "")
-	LuciUtil.exec("uci commit misstar >> /tmp/ss-redir.log")
-	LuciUtil.exec("/etc/misstar/scripts/aria2 restart >> /tmp/ss-redir.log")
+	LuciUtil.exec("uci commit misstar ")
+	LuciUtil.exec("/etc/misstar/scripts/aria2 restart ")
 	set=ture
 	if set then
         code = 0
@@ -613,7 +487,7 @@ function get_status()
 	local ssh_status
 	local aria2_status
 	local webshell_status
-	ss_status=LuciUtil.exec("ps | grep ss-redir | grep -v grep | wc -l")
+	ss_status=LuciUtil.exec("ps | grep -E 'ss-redir|ssr-redir' | grep -v 'grep' | wc -l")
 	adm_status=LuciUtil.exec("ps | grep adm | grep -v grep | wc -l")
 	ftp_status=LuciUtil.exec("ps | grep vsftp | grep -v grep | wc -l")
 	web_status=uci:get("misstar","web","enable")

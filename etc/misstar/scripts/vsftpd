@@ -36,16 +36,9 @@ ftp_getconfig() {
 		exit
 	fi
 	
-	rm_enable=$(uci get misstar.$appname.rm_enable)
-	if [ "$rm_enable" = '0' ];then
-		/etc/misstar/scripts/misstar ftp disable
-	else
-		/etc/misstar/scripts/misstar ftp enable
-	fi
-	
 	
 	root_enable=$(uci get misstar.$appname.root_enable)
-	if [ "$root_enable" = '0' ];then
+	if [ "$root_enable" = '1' ];then
 		echo "root" >> /etc/vsftpd.users
 	else
 		sed -i "/root/"d /etc/vsftpd.users

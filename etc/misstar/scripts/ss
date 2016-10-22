@@ -47,17 +47,48 @@ DNSPATH=/etc/misstar/$Hardware_model/dns2socks
 appname=misstar
 ss_getconfig() {
 	local_ip=0.0.0.0
-	ss_server_ip=$(uci get $appname.ss.ss_server)
+	node=$(uci get $appname.ss.node)
+	node_switch=$(uci get $appname.ss.node_switch)
+	if [ "$node_switch" == "0" ];then
+		node= 1
+	fi
+	ss_server_ip=$(uci get $appname.ss.ss_server_$node)
+	if [ "$ss_server_ip" == "" ]; then
+		node=1
+		ss_server_ip=$(uci get $appname.ss.ss_server_$node)
+	fi
 	#ss_server_ip=`nslookup $ss_server_ip | grep 'Address 1' | grep -v '127.0.0.1' | awk '{print $3}'`
-	ss_server_port=$(uci get $appname.ss.ss_server_port)
-	ss_server_password=$(uci get $appname.ss.ss_password)
-	ss_local_port=$(uci get $appname.ss.ss_local_port)
-	ss_server_method=$(uci get $appname.ss.ss_method)
-	rm -rf $CONFIG
-	echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$ss_local_port',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $CONFIG
+	ss_server_port=$(uci get $appname.ss.ss_server_port_$node)
+	if [ "$ss_server_port" == "" ]	;then
+		ss_server_port=$(uci get $appname.ss.ss_server_port_1)
+	fi
+	ss_server_password=$(uci get $appname.ss.ss_password_$node)
+	if [ "$ss_server_password" == "" ]	;then
+		ss_server_password=$(uci get $appname.ss.ss_password_1)
+	fi
+	ss_local_port=$(uci get $appname.ss.ss_local_port_$node)
+	if [ "$ss_local_port" == "" ]	;then
+		ss_local_port=$(uci get $appname.ss.ss_local_port_1)
+	fi
+	ss_server_method=$(uci get $appname.ss.ss_method_$node)
+	ssr_enable=$(uci get $appname.ss.ssr_enable_$node)
+	ssr_protocol=$(uci get $appname.ss.ssr_protocol_$node)
+	ssr_obfs=$(uci get $appname.ss.ssr_obfs_$node)
 	DNS_PORT=`expr $ss_local_port + 1`
-	echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $DNSCONF
+	rm -rf $CONFIG
+	
+	if [ "$ssr_enable" = '0' ];then
+		echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$ss_local_port',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $CONFIG
+		echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'"\n}' > $DNSCONF
+	fi	
+	if [ "$ssr_enable" = '1' ];then
+		APPPATH=/etc/misstar/$Hardware_model/ssr-redir
+		LOCALPATH=/etc/misstar/$Hardware_model/ssr-local
+		echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$ss_local_port',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'",\n  "protocol":"'$ssr_protocol'",\n  "obfs":"'$ssr_obfs'"\n}' > $CONFIG
+		echo -e '{\n  "server":"'$ss_server_ip'",\n  "server_port":'$ss_server_port',\n  "local_port":'$DNS_PORT',\n  "local_address":"'$local_ip'",\n  "password":"'$ss_server_password'",\n  "timeout":600,\n  "method":"'$ss_server_method'",\n  "protocol":"'$ssr_protocol'",\n  "obfs":"'$ssr_obfs'"\n}' > $DNSCONF
+	fi
 	}
+	
 ss_getconfig
 
 start()
@@ -211,8 +242,10 @@ stop()
 	# Client Mode
 	#service_stop /usr/bin/ss-local
 	# Proxy Mode
-	service_stop $APPPATH
-	service_stop $LOCALPATH
+	service_stop /etc/misstar/$Hardware_model/ss-redir
+	service_stop /etc/misstar/$Hardware_model/ss-local
+	service_stop /etc/misstar/$Hardware_model/ssr-redir
+	service_stop /etc/misstar/$Hardware_model/ssr-local
 	service_stop $DNSPATH
 	# Tunnel
 	#service_stop /usr/bin/ss-tunnel
@@ -249,3 +282,4 @@ restart()
 	sleep 3
 	start
 }
+

@@ -46,152 +46,233 @@
 									<div id="main">
 										<table width="100%" border="0" cellpadding="8" cellspacing="0" class="tableBasic">
 											<tr>
-												<th width="131"></th>
-												<th><b>Shadowsocks开关</b></th>
+												<td align="left">SS开关</td>
+												<td colspan="2">
+													<div style="display: inline;">
+														<div style="float: left;">
+															<label for="ss_enable_1">
+															<input type="radio" name="ss_enable" id="ss_enable_1" value="1" onchange="ss_change();">开启</label>
+															<label for="ss_enable_0">
+															<input  type="radio" name="ss_enable" id="ss_enable_0" value="0" onchange="ss_change();">关闭</label>
+														</div>
+														<div style="float: right;">
+															<a href="javascript:ms_switch();">⇌主备交换</a>
+														</div>
+													</div>
+												</td>
+
 											</tr>
 											<tr>
-												<tr>
-													<td align="left">SS开关</td>
-													<td>
-														<label for="ss_enable_1">
-															<input type="radio" name="ss_enable" id="ss_enable_1" value="1" onchange="ss_change();">开启</label>
-														<label for="ss_enable_0">
-															<input type="radio" name="ss_enable" id="ss_enable_0" value="0" onchange="ss_change();">关闭</label>
-													</td>
-												</tr>
-												<tr>
-													<th width="131"></th>
-													<th><b>SS相关配置</b></th>
-												</tr>
-												<tr>
-													<td align="left">服务器地址</td>
-													<td>
-														<input type="text" id="ss_server" value="" size="80" class="inpMain" style="width: 300px;" />
-													</td>
-												</tr>
-												<tr>
-													<td align="left">服务器端口</td>
-													<td>
-														<input type="text" id="ss_server_port" value="" size="80" class="inpMain" style="width: 300px;" />
-													</td>
-												</tr>
-												<tr>
-													<td align="left">本地端口</td>
-													<td>
-														<input type="text" id="ss_local_port" value="" size="80" class="inpMain" style="width: 300px;" />
-														<p class="cue">通常情况下不建议频繁对本地端口进行更改</p>
-													</td>
-												</tr>
-												<tr>
-													<td align="left">服务器密码</td>
-													<td>
-														<input type="password" id="ss_passwd" value="" size="80" class="inpMain" style="width: 300px;" />
-													</td>
-												</tr>
-												<tr>
-													<td align="left">加密方式</td>
-													<td>
-														<select id="ss_method" style="width: 300px;">
-															<option value="aes-256-cfb">aes-256-cfb</option>
-															<option value="aes-192-cfb">aes-192-cfb</option>
-															<option value="aes-128-cfb">aes-128-cfb</option>
-															<option value="table">table</option>
-															<option value="rc4">rc4</option>
-															<option value="rc4-md5">rc4-md5</option>
-															<option value="bf-cfb">bf-cfb</option>
-															<option value="camellia-128-cfb">camellia-128-cfb</option>
-															<option value="camellia-192-cfb">camellia-192-cfb</option>
-															<option value="camellia-256-cfb">camellia-256-cfb</option>
-															<option value="cast5-cfb">cast5-cfb</option>
-															<option value="des-cfb">des-cfb</option>
-															<option value="idea-cfb">idea-cfb</option>
-															<option value="rc2-cfb">rc2-cfb</option>
-															<option value="seed-cfb">seed-cfb</option>
-															<option value="salsa20">salsa20</option>
-															<option value="chacha20">chacha20</option>
-															<option value="chacha20-ietf">chacha20-ietf</option>
-														</select>
-														<p class="cue">根据服务器给的加密方式进行配置，与服务器保持一致才能正常连接。</p>
-													</td>
-												</tr>
+												<td align="left">工作模式</td>
+												<td colspan="2">
+													<select id="ss_mode" style="width: 300px;">
+														<option value="gfwlist">GfwList</option>
+														<option value="gamemode">游戏模式</option>
+														<option value="whitelist" selected>白名单</option>
+														<option value="wholemode">全局模式</option>
+													</select>
 
-												<tr>
-													<td align="left">工作模式</td>
-													<td>
-														<select id="ss_mode">
-															<option value="gfwlist">GfwList</option>
-															<option value="gamemode">游戏模式</option>
-															<option value="whitelist" selected>白名单</option>
-															<option value="wholemode">全局模式</option>
-														</select>
-														<p class="cue">GfwList模式：根据PAC列表，对被屏蔽的国外IP进行加速<br> 游 戏 模 式：对国外所有IP进行UDP加速（相当于白名单+UDP）<br> 白名单 模 式：对国外所有IP进行加速<br> 全 局 模 式：所有流量都进行SS转发，可能造成国内网站访问变慢及流量消耗大，请谨慎开启</p>
-													</td>
-												</tr>
-												<tr>
-													<th width="131"></th>
-													<th><b><label><input name="ssr" id="ssr" type="checkbox" value="" onclick="ssr_change();">ssr</label> </b></th>
-												</tr>
-												<tr>
-													<td align="left">协议</td>
-													<td>
-														<select id="ssr_protocol" disabled="disabled" style="width: 300px;">
-															<option value="origin">origin</option>
-															<option value="verify_simple">verify_simple</option>
-															<option value="verify_deflate">verify_deflate</option>
-															<option value="verify_sha1">verify_sha1</option>
-															<option value="verify_sha1_compatible">verify_sha1_compatible</option>
-															<option value="auth_simple">auth_simple</option>
-															<option value="auth_sha1">auth_sha1</option>
-															<option value="auth_sha1_compatible">auth_sha1_compatible</option>
-															<option value="auth_sha1_v2">auth_sha1_v2</option>
-															<option value="auth_sha1_v2_compatible">auth_sha1_v2_compatible</option>
-														</select>
-													</td>
-												</tr>
-												<tr>
-													<td align="left">混淆方式</td>
-													<td>
-														<select id="ssr_obfs" disabled="disabled" style="width: 300px;">
-															<option value="plain">plain</option>
-															<option value="http_simple">http_simple</option>
-															<option value="http_simple_compatible">http_simple_compatible</option>
-															<option value="http_post">http_post</option>
-															<option value="http_post_compatible">http_post_compatible</option>
-															<option value="tls_simple">tls_simple</option>
-															<option value="tls_simple_compatible">tls_simple_compatible</option>
-															<option value="random_head">random_head</option>
-															<option value="random_head_compatible">random_head_compatible</option>
-															<option value="tls1.0_session_auth">tls1.0_session_auth</option>
-															<option value="tls1.0_session_auth_compatible">tls1.0_session_auth_compatible</option>
-															<option value="tls1.2_ticket_auth">tls1.2_ticket_auth</option>
-															<option value="tls1.2_ticket_auth_compatible">tls1.2_ticket_auth_compatible</option>
-														</select>
-													</td>
-												</tr>
-												<tr>
-													<th width="131"></th>
-													<th><b>工作状态</b></th>
-												</tr>
-												<tr>
-													<td align="left">SS进程状态</td>
-													<td>
-														<p class="cue" id="ss_status">查询中....</p>
-													</td>
-												</tr>
-												<tr>
-													<td align="left">DNS解析状态</td>
-													<td>
-														<p class="cue" id="dns_status">查询中....</p>
-													</td>
-												</tr>
-												<tr>
-													<td align="left">说明</td>
-													<td>
-														<p class="cue">1：无进程请尝试重新开关一下ss</p>
-														<p class="cue">2：有进程无法加速请看DNS状态，DNS状态正常则检查ss账号</p>
-														<p class="cue">3：受有关地区和宽带区别的影响，部分地区可能无法突破DNS，请关注后续突破方案。</p>
-													</td>
-												</tr>
+												</td>
+											</tr>
+											<tr>
+												<th width="131"></th>
+												<th width="420" align="center"><b>主用节点</b></th>
+												<th align="center">
+													<div style="display: inline;">
+														<div style="float: left;"><b>备用节点</b></div>
+														<div style="float: right;"><label><input id="node_switch" align="right"  type="checkbox" value="">自动切换节点</label></div>
+													</div>
+												</th>
+											</tr>
+											<tr>
+												<td align="left">服务器地址</td>
+												<td>
+													<input type="text" id="ss_server_1" value="" size="80" class="inpMain" style="width: 300px;" />
+												</td>
+												<td>
+													<input type="text" id="ss_server_2" value="" size="80" class="inpMain" placeholder="不启用请留空" style="width: 300px;" disabled="disabled" />
+												</td>
+											</tr>
+											<tr>
+												<td align="left">服务器端口</td>
+												<td>
+													<input type="text" id="ss_server_port_1" value="" size="80" class="inpMain" style="width: 300px;" />
+												</td>
+												<td>
+													<input type="text" id="ss_server_port_2" value="" size="80" class="inpMain" placeholder="和主节点一致请留空" style="width: 300px;" disabled="disabled" />
+												</td>
+											</tr>
+											<tr>
+												<td align="left">本地端口</td>
+												<td>
+													<input type="text" id="ss_local_port_1" value="" size="80" class="inpMain" style="width: 300px;" />
+												</td>
+												<td>
+													<input type="text" id="ss_local_port_2" value="" size="80" class="inpMain" placeholder="和主节点一致请留空" style="width: 300px;" disabled="disabled" />
+												</td>
+											</tr>
+											<tr>
+												<td align="left">服务器密码</td>
+												<td>
+													<input type="password" id="ss_passwd_1" value="" size="80" class="inpMain" style="width: 300px;" disabled="disabled" />
+												</td>
+												<td>
+													<input type="password" id="ss_passwd_2" value="" size="80" class="inpMain" placeholder="和主节点一致请留空" style="width: 300px;" disabled="disabled" />
+												</td>
+											</tr>
+											<tr>
+												<td align="left">加密方式</td>
+												<td>
+													<select id="ss_method_1" style="width: 300px;" disabled="disabled">
+														<option value="aes-256-cfb">aes-256-cfb</option>
+														<option value="aes-192-cfb">aes-192-cfb</option>
+														<option value="aes-128-cfb">aes-128-cfb</option>
+														<option value="table">table</option>
+														<option value="rc4">rc4</option>
+														<option value="rc4-md5">rc4-md5</option>
+														<option value="bf-cfb">bf-cfb</option>
+														<option value="camellia-128-cfb">camellia-128-cfb</option>
+														<option value="camellia-192-cfb">camellia-192-cfb</option>
+														<option value="camellia-256-cfb">camellia-256-cfb</option>
+														<option value="cast5-cfb">cast5-cfb</option>
+														<option value="des-cfb">des-cfb</option>
+														<option value="idea-cfb">idea-cfb</option>
+														<option value="rc2-cfb">rc2-cfb</option>
+														<option value="seed-cfb">seed-cfb</option>
+														<option value="salsa20">salsa20</option>
+														<option value="chacha20">chacha20</option>
+														<option value="chacha20-ietf">chacha20-ietf</option>
+													</select>
+												</td>
+												<td>
+													<select id="ss_method_2" style="width: 300px;" disabled="disabled">
+														<option value="aes-256-cfb">aes-256-cfb</option>
+														<option value="aes-192-cfb">aes-192-cfb</option>
+														<option value="aes-128-cfb">aes-128-cfb</option>
+														<option value="table">table</option>
+														<option value="rc4">rc4</option>
+														<option value="rc4-md5">rc4-md5</option>
+														<option value="bf-cfb">bf-cfb</option>
+														<option value="camellia-128-cfb">camellia-128-cfb</option>
+														<option value="camellia-192-cfb">camellia-192-cfb</option>
+														<option value="camellia-256-cfb">camellia-256-cfb</option>
+														<option value="cast5-cfb">cast5-cfb</option>
+														<option value="des-cfb">des-cfb</option>
+														<option value="idea-cfb">idea-cfb</option>
+														<option value="rc2-cfb">rc2-cfb</option>
+														<option value="seed-cfb">seed-cfb</option>
+														<option value="salsa20">salsa20</option>
+														<option value="chacha20">chacha20</option>
+														<option value="chacha20-ietf">chacha20-ietf</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr>
+												<th width="131"></th>
+												<th><b><label><input id="ssr_enable_1" type="checkbox" value="" onclick="ssr_change();">ssr</label> </b></th>
+												<th><b><label><input id="ssr_enable_2" type="checkbox" value="" onclick="ssr_change();">ssr</label> </b></th>
+											</tr>
+											<tr>
+												<td align="left">协议</td>
+												<td>
+													<select id="ssr_protocol_1" disabled="disabled" style="width: 300px;" disabled="disabled">
+														<option value="origin">origin</option>
+														<option value="verify_simple">verify_simple</option>
+														<option value="verify_deflate">verify_deflate</option>
+														<option value="verify_sha1">verify_sha1</option>
+														<option value="verify_sha1_compatible">verify_sha1_compatible</option>
+														<option value="auth_simple">auth_simple</option>
+														<option value="auth_sha1">auth_sha1</option>
+														<option value="auth_sha1_compatible">auth_sha1_compatible</option>
+														<option value="auth_sha1_v2">auth_sha1_v2</option>
+														<option value="auth_sha1_v2_compatible">auth_sha1_v2_compatible</option>
+													</select>
+												</td>
+												<td>
+													<select id="ssr_protocol_2" disabled="disabled" style="width: 300px;" disabled="disabled">
+														<option value="origin">origin</option>
+														<option value="verify_simple">verify_simple</option>
+														<option value="verify_deflate">verify_deflate</option>
+														<option value="verify_sha1">verify_sha1</option>
+														<option value="verify_sha1_compatible">verify_sha1_compatible</option>
+														<option value="auth_simple">auth_simple</option>
+														<option value="auth_sha1">auth_sha1</option>
+														<option value="auth_sha1_compatible">auth_sha1_compatible</option>
+														<option value="auth_sha1_v2">auth_sha1_v2</option>
+														<option value="auth_sha1_v2_compatible">auth_sha1_v2_compatible</option>
+													</select>
+												</td>
+											</tr>
+											<tr>
+												<td align="left">混淆方式</td>
+												<td>
+													<select id="ssr_obfs_1" disabled="disabled" style="width: 300px;" disabled="disabled">
+														<option value="plain">plain</option>
+														<option value="http_simple">http_simple</option>
+														<option value="http_simple_compatible">http_simple_compatible</option>
+														<option value="http_post">http_post</option>
+														<option value="http_post_compatible">http_post_compatible</option>
+														<option value="tls_simple">tls_simple</option>
+														<option value="tls_simple_compatible">tls_simple_compatible</option>
+														<option value="random_head">random_head</option>
+														<option value="random_head_compatible">random_head_compatible</option>
+														<option value="tls1.0_session_auth">tls1.0_session_auth</option>
+														<option value="tls1.0_session_auth_compatible">tls1.0_session_auth_compatible</option>
+														<option value="tls1.2_ticket_auth">tls1.2_ticket_auth</option>
+														<option value="tls1.2_ticket_auth_compatible">tls1.2_ticket_auth_compatible</option>
+													</select>
+												</td>
+												<td>
+													<select id="ssr_obfs_2" disabled="disabled" style="width: 300px;" disabled="disabled">
+														<option value="plain">plain</option>
+														<option value="http_simple">http_simple</option>
+														<option value="http_simple_compatible">http_simple_compatible</option>
+														<option value="http_post">http_post</option>
+														<option value="http_post_compatible">http_post_compatible</option>
+														<option value="tls_simple">tls_simple</option>
+														<option value="tls_simple_compatible">tls_simple_compatible</option>
+														<option value="random_head">random_head</option>
+														<option value="random_head_compatible">random_head_compatible</option>
+														<option value="tls1.0_session_auth">tls1.0_session_auth</option>
+														<option value="tls1.0_session_auth_compatible">tls1.0_session_auth_compatible</option>
+														<option value="tls1.2_ticket_auth">tls1.2_ticket_auth</option>
+														<option value="tls1.2_ticket_auth_compatible">tls1.2_ticket_auth_compatible</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr>
+												<th width="131"></th>
+												<th colspan="2"><b>工作状态</b></th>
+											</tr>
+											<tr>
+												<td align="left">当前节点：</td>
+												<td colspan="2">
+													<p class="cue" id="ss_node">查询中....</p>
+												</td>
+											</tr>
+
+											<tr>
+												<td align="left">SS进程状态</td>
+												<td colspan="2">
+													<p class="cue" id="ss_status">查询中....</p>
+												</td>
+											</tr>
+											<tr>
+												<td align="left">DNS解析状态</td>
+												<td colspan="2">
+													<p class="cue" id="dns_status">查询中....</p>
+												</td>
+											</tr>
+											<tr>
+												<td align="left">说明</td>
+												<td colspan="2">
+													<p class="cue">1：无进程请尝试重新开关一下ss</p>
+													<p class="cue">2：有进程无法加速请看DNS状态，DNS状态正常则检查ss账号</p>
+													<p class="cue">3：路由显示加速正常但是电脑无法FQ，请检查电脑设置：DNS自动获取、关闭其他代理、还原修改过的hosts</p>
+												</td>
+											</tr>
 										</table>
 									</div>
 									<div id="display">
@@ -214,8 +295,6 @@
 													<label for="dns_auto_0">
 															<input type="radio" name="dns_auto" id="dns_auto_0" value="0" onchange="change();" >关闭</label>
 													<p class="cue">开启：自动定期更新PAC和白名单列表<br>关闭：不自动更新</p>
-													<p class="cue">注意：如果开启自动更新，那你手动编辑将会失效</p>
-													<p class="cue"><b>当前版本暂不支持手动编辑和自动更新，请等待更新</b></p>
 												</td>
 											</tr>
 											<tr>
@@ -237,8 +316,8 @@
 											<tr>
 												<td align="left">添加自定义地址</td>
 												<td>
-													<input type="text" id="ss_server" value="" size="80" class="inpMain" style="width: 300px;" />
-													<input type="button" id="add_pac" class="btn_submit" value="添加">
+													<input type="text" id="add_pac" value="" size="80" class="inpMain" style="width: 300px;" />
+													<input type="button" class="btn_submit" onclick="add_pac_list();" value="添加">
 												</td>
 											</tr>
 											<tr>
@@ -272,8 +351,8 @@
 											<tr>
 												<td align="left">添加自定义地址</td>
 												<td>
-													<input type="text" id="ss_server" value="" size="80" class="inpMain" style="width: 300px;" />
-													<input type="button" id="add_pac" class="btn_submit" value="添加">
+													<input type="text" id="add_white" value="" size="80" class="inpMain" style="width: 300px;" />
+													<input type="button" class="btn_submit" onclick="add_white_list();" value="添加">
 												</td>
 											</tr>
 											<tr>
@@ -297,7 +376,6 @@
 											<td>
 												<input type="hidden" name="token" value="24760807" />
 												<input name="submit" class="btn_submit" type="submit" onclick="set_ssdns();" value="提交" />
-												<img id="google" onload="google_load();" src="https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png" style="display:none;" onerror="google_err();">
 											</td>
 										</tr>
 									</table>
@@ -341,7 +419,7 @@
 			< $paclist.length; i++)} <tr>
 				<td>{$whitelist[i].address}</td>
 				<td align="center">
-					<a href="javascript:del_pac('{$whitelist[i].address}')">删除</a>
+					<a href="javascript:del_white('{$whitelist[i].address}')">删除</a>
 				</td>
 
 				</tr>
@@ -364,70 +442,187 @@
 				}
 			}
 
+			function ms_switch() {
+				if(document.getElementById("ss_server_2").value != "") {
+					var temp = document.getElementById("ss_server_1").value;
+					document.getElementById("ss_server_1").value = document.getElementById("ss_server_2").value;
+					document.getElementById("ss_server_2").value = temp;
+				}
+				if(document.getElementById("ss_server_port_2").value != "") {
+					temp = document.getElementById("ss_server_port_1").value;
+					document.getElementById("ss_server_port_1").value = document.getElementById("ss_server_port_2").value;
+					document.getElementById("ss_server_port_2").value = temp;
+				}
+				if(document.getElementById("ss_passwd_2").value != "") {
+					temp = document.getElementById("ss_passwd_1").value;
+					document.getElementById("ss_passwd_1").value = document.getElementById("ss_passwd_2").value;
+					document.getElementById("ss_passwd_2").value = temp;
+				}
+				if(document.getElementById("ss_local_port_2").value != "") {
+					temp = document.getElementById("ss_local_port_1").value;
+					document.getElementById("ss_local_port_1").value = document.getElementById("ss_local_port_2").value;
+					document.getElementById("ss_local_port_2").value = temp;
+				}
+				temp1 = document.getElementById("ss_method_1").value;
+				temp2 = document.getElementById("ss_method_2").value;
+				for(var i = 0; i < document.getElementById("ss_method_2").options.length; i++) {
+					if(document.getElementById("ss_method_2").options[i].value == temp1) {
+						document.getElementById("ss_method_2").options[i].selected = true;
+						break;
+					}
+				}
+				for(var i = 0; i < document.getElementById("ss_method_1").options.length; i++) {
+					if(document.getElementById("ss_method_1").options[i].value == temp2) {
+						document.getElementById("ss_method_1").options[i].selected = true;
+						break;
+					}
+				}
+				temp1 = document.getElementById("ssr_protocol_1").value;
+				temp2 = document.getElementById("ssr_protocol_2").value;
+				for(var i = 0; i < document.getElementById("ssr_protocol_2").options.length; i++) {
+					if(document.getElementById("ssr_protocol_2").options[i].value == temp1) {
+						document.getElementById("ssr_protocol_2").options[i].selected = true;
+						break;
+					}
+				}
+				for(var i = 0; i < document.getElementById("ssr_protocol_1").options.length; i++) {
+					if(document.getElementById("ssr_protocol_1").options[i].value == temp2) {
+						document.getElementById("ssr_protocol_1").options[i].selected = true;
+						break;
+					}
+				}
+				temp1 = document.getElementById("ssr_obfs_1").value;
+				temp2 = document.getElementById("ssr_obfs_2").value;
+				for(var i = 0; i < document.getElementById("ssr_obfs_2").options.length; i++) {
+					if(document.getElementById("ssr_obfs_2").options[i].value == temp1) {
+						document.getElementById("ssr_obfs_2").options[i].selected = true;
+						break;
+					}
+				}
+				for(var i = 0; i < document.getElementById("ssr_obfs_1").options.length; i++) {
+					if(document.getElementById("ssr_obfs_1").options[i].value == temp2) {
+						document.getElementById("ssr_obfs_1").options[i].selected = true;
+						break;
+					}
+				}
+				temp1 = document.getElementById("ssr_enable_1").checked;
+				temp2 = document.getElementById("ssr_enable_2").checked;
+				document.getElementById("ssr_enable_2").checked = temp1;
+				document.getElementById("ssr_enable_1").checked = temp2;
+
+			}
+
 			function ss_change() {
 				if(document.getElementById("ss_enable_1").checked == true) {
-					document.getElementById("ss_local_port").disabled = false;
-					document.getElementById("ss_method").disabled = false;
+					document.getElementById("ss_local_port_1").disabled = false;
+					document.getElementById("ss_method_1").disabled = false;
 					document.getElementById("ss_mode").disabled = false;
-					document.getElementById("ss_passwd").disabled = false;
-					document.getElementById("ss_server").disabled = false;
-					document.getElementById("ss_server_port").disabled = false;
+					document.getElementById("ss_passwd_1").disabled = false;
+					document.getElementById("ss_server_1").disabled = false;
+					document.getElementById("ss_server_port_1").disabled = false;
+					document.getElementById("ss_local_port_2").disabled = false;
+					document.getElementById("ss_method_2").disabled = false;
+					document.getElementById("ss_passwd_2").disabled = false;
+					document.getElementById("ss_server_2").disabled = false;
+					document.getElementById("ss_server_port_2").disabled = false;
 				} else {
-					document.getElementById("ss_local_port").disabled = true;
-					document.getElementById("ss_method").disabled = true;
+					document.getElementById("ss_local_port_1").disabled = true;
+					document.getElementById("ss_method_1").disabled = true;
 					document.getElementById("ss_mode").disabled = true;
-					document.getElementById("ss_passwd").disabled = true;
-					document.getElementById("ss_server").disabled = true;
-					document.getElementById("ss_server_port").disabled = true;
+					document.getElementById("ss_passwd_1").disabled = true;
+					document.getElementById("ss_server_1").disabled = true;
+					document.getElementById("ss_server_port_1").disabled = true;
+					document.getElementById("ss_local_port_2").disabled = true;
+					document.getElementById("ss_method_2").disabled = true;
+					document.getElementById("ss_passwd_2").disabled = true;
+					document.getElementById("ss_server_2").disabled = true;
+					document.getElementById("ss_server_port_2").disabled = true;
 				}
+				ssr_change();
 			}
 
 			function ssr_change() {
-				if(document.getElementById("ssr").checked == true) {
-					document.getElementById("ssr_protocol").removeAttribute("disabled");
-					document.getElementById("ssr_obfs").removeAttribute("disabled");
+				if(document.getElementById("ssr_enable_1").checked == true) {
+					document.getElementById("ssr_protocol_1").removeAttribute("disabled");
+					document.getElementById("ssr_obfs_1").removeAttribute("disabled");
 				} else {
-					document.getElementById("ssr_protocol").disabled = "disabled";
-					document.getElementById("ssr_obfs").disabled = "disabled";
+					document.getElementById("ssr_protocol_1").disabled = "disabled";
+					document.getElementById("ssr_obfs_1").disabled = "disabled";
+				}
+				if(document.getElementById("ssr_enable_2").checked == true) {
+					document.getElementById("ssr_protocol_2").removeAttribute("disabled");
+					document.getElementById("ssr_obfs_2").removeAttribute("disabled");
+				} else {
+					document.getElementById("ssr_protocol_2").disabled = "disabled";
+					document.getElementById("ssr_obfs_2").disabled = "disabled";
 				}
 			}
 
-			function google_load() {
-				googlestatus = 1;
-			}
-
-			function google_err() {
-				googlestatus = 0;
-			}
-
 			function set_ssdns() {
-				var ss_enable;
-				var ss_server;
-				var ss_port;
-				var ss_local_port;
-				var ss_passwd;
-				var ss_method;
+				var ss_enable_1, ss_enable_2;
+				var ss_server_1, ss_server_2;
+				var ss_server_port_1, ss_server_port_2;
+				var ss_local_port_1, ss_local_port_2;
+				var ss_passwd_1, ss_passwd_2;
+				var ss_method_1, ss_method_2;
 				var ss_mode;
+				var ssr_protocol_1, ssr_protocol_2;
+				var ssr_obfs_1, ssr_obfs_2;
 				if(document.getElementById("ss_enable_0").checked == true) {
 					ss_enable = 0;
 				}
 				if(document.getElementById("ss_enable_1").checked == true) {
 					ss_enable = 1;
 				}
-				ss_server = document.getElementById("ss_server").value;
-				ss_port = document.getElementById("ss_server_port").value;
-				ss_local_port = document.getElementById("ss_local_port").value;
-				ss_passwd = document.getElementById("ss_passwd").value;
-				ss_method = document.getElementById("ss_method").value;
+				var ssr_enable_1 = 0;
+				if(document.getElementById("ssr_enable_1").checked == true) {
+					ssr_enable_1 = 1;
+				}
+				var ssr_enable_2 = 0;
+				if(document.getElementById("ssr_enable_2").checked == true) {
+					ssr_enable_2 = 1;
+				}
+				var node_switch = 0;
+				if(document.getElementById("node_switch").checked == true) {
+					node_switch = 1;
+				}
+				ss_server_1 = document.getElementById("ss_server_1").value;
+				ss_server_port_1 = document.getElementById("ss_server_port_1").value;
+				ss_local_port_1 = document.getElementById("ss_local_port_1").value;
+				ss_passwd_1 = document.getElementById("ss_passwd_1").value;
+				ss_method_1 = document.getElementById("ss_method_1").value;
 				ss_mode = document.getElementById("ss_mode").value;
+				ssr_protocol_1 = document.getElementById("ssr_protocol_1").value;
+				ssr_obfs_1 = document.getElementById("ssr_obfs_1").value;
+
+				ss_server_2 = document.getElementById("ss_server_2").value;
+				ss_server_port_2 = document.getElementById("ss_server_port_2").value;
+				ss_local_port_2 = document.getElementById("ss_local_port_2").value;
+				ss_passwd_2 = document.getElementById("ss_passwd_2").value;
+				ss_method_2 = document.getElementById("ss_method_2").value;
+				ssr_protocol_2 = document.getElementById("ssr_protocol_2").value;
+				ssr_obfs_2 = document.getElementById("ssr_obfs_2").value;
+
 				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_ssdns")%>', {
 					ss_enable: ss_enable,
-					ss_server: ss_server,
-					ss_passwd: ss_passwd,
-					ss_port: ss_port,
-					ss_local_port: ss_local_port,
-					ss_method: ss_method,
-					ss_mode: ss_mode
+					node_switch: node_switch,
+					ss_mode: ss_mode,
+					ss_server_1: ss_server_1,
+					ss_passwd_1: ss_passwd_1,
+					ss_server_port_1: ss_server_port_1,
+					ss_local_port_1: ss_local_port_1,
+					ss_method_1: ss_method_1,
+					ssr_enable_1: ssr_enable_1,
+					ssr_protocol_1: ssr_protocol_1,
+					ssr_obfs_1: ssr_obfs_1,
+					ss_server_2: ss_server_2,
+					ss_server_port_2: ss_server_port_2,
+					ss_local_port_2: ss_local_port_2,
+					ss_passwd_2: ss_passwd_2,
+					ss_method_2: ss_method_2,
+					ssr_enable_2: ssr_enable_2,
+					ssr_protocol_2: ssr_protocol_2,
+					ssr_obfs_2: ssr_obfs_2
 				}, function(rsp) {
 					if(rsp.code == 0) {
 						location.reload(1);
@@ -437,28 +632,91 @@
 				});
 				return xhr;
 			}
-			function del_pac(address){
-				alert(address);
+
+			function add_pac_list() {
+				var address = document.getElementById("add_pac").value;
+				if(address == "") {
+					alert("地址不能为空");
+					return 1;
+				}
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "add_pac")%>', {
+					address: address
+				}, function(rsp) {
+					if(rsp.code == 0) {
+						alert("添加成功！");
+						location.reload(1);
+					} else {
+						alert(rsp.msg);
+					}
+				});
+				return xhr;
 			}
+
+			function add_white_list() {
+				var address = document.getElementById("add_white").value;
+				if(address == "") {
+					alert("地址不能为空");
+					return 1;
+				}
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "add_white")%>', {
+					address: address
+				}, function(rsp) {
+					if(rsp.code == 0) {
+						alert("添加成功！");
+						location.reload(1);
+					} else {
+						alert(rsp.msg);
+					}
+				});
+				return xhr;
+			}
+
+			function del_pac(address) {
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "del_pac")%>', {
+					address: address
+				}, function(rsp) {
+					if(rsp.code == 0) {
+						alert("删除成功！");
+						location.reload(1);
+					} else {
+						alert(rsp.msg);
+					}
+				});
+				return xhr;
+			}
+
+			function del_white(address) {
+				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "del_white")%>', {
+					address: address
+				}, function(rsp) {
+					if(rsp.code == 0) {
+						alert("删除成功！");
+						location.reload(1);
+					} else {
+						alert(rsp.msg);
+					}
+				});
+				return xhr;
+			}
+
 			function get_ss_status() {
 				var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_ssstatus")%>', {}, function(rsp) {
 					if(rsp.code == 0) {
-						var ss_info = rsp.ss_status;
-						if(ss_info.ss_status == 1) {
+						var status = rsp.ss_status;
+						if(status.ss_status == 1) {
 							document.getElementById("ss_status").innerHTML = "未运行";
-						} else if(ss_info.ss_status == 2) {
-							document.getElementById("google").src = "https://www.google.com.hk/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png?" + Math.random();
-
-							if(googlestatus == 1) {
-								document.getElementById("ss_status").innerHTML = "运行中，国外网站加速成功！";
-							} else {
-								document.getElementById("ss_status").innerHTML = "运行中，国外网站加速失败，请检查ss账号并稍作等待！";
-							}
+							document.getElementById("ss_node").innerHTML = "无";
+						} else if(status.ss_status == 2) {
+							document.getElementById("ss_status").innerHTML = "运行中，国外网站加速成功！";
+							document.getElementById("ss_node").innerHTML = "节点" + status.ss_node;
+						} else if(status.ss_status == 3) {
+							document.getElementById("ss_status").innerHTML = "运行中，国外网站加速失败，请检查ss账号。";
+							document.getElementById("ss_node").innerHTML = "节点" + status.ss_node;
 						}
 
-						if(ss_info.ss_dnsstatus == 0) {
+						if(status.ss_dnsstatus == 0) {
 							document.getElementById("dns_status").innerHTML = "DNS防污染失败！";
-						} else if(ss_info.ss_dnsstatus == 1) {
+						} else if(status.ss_dnsstatus == 1) {
 							document.getElementById("dns_status").innerHTML = "DNS防污染成功。";
 						}
 					}
@@ -476,24 +734,21 @@
 							var dns_info = rsp.dns_info;
 							var tpl = $('#tplpaclist').html(),
 								tpldata = [];
-							document.getElementById("ss_server").value = ss_info.ss_server;
-							document.getElementById("ss_server_port").value = ss_info.ss_server_port;
-							document.getElementById("ss_passwd").value = ss_info.ss_passwd;
-							document.getElementById("ss_local_port").value = ss_info.ss_local_port;
 							document.getElementById("ss_enable_" + ss_info.enable).checked = true;
-							if(ss_info.enable == 0) {
-								document.getElementById("ss_local_port").disabled = true;
-								document.getElementById("ss_method").disabled = true;
-								document.getElementById("ss_mode").disabled = true;
-								document.getElementById("ss_passwd").disabled = true;
-								document.getElementById("ss_server").disabled = true;
-								document.getElementById("ss_server_port").disabled = true;
+							if(ss_info.node_switch == 1) {
+								document.getElementById("node_switch").checked = true;
+							} else {
+								document.getElementById("node_switch").checked = false;
 							}
+							document.getElementById("ss_server_1").value = ss_info.ss_server_1;
+							document.getElementById("ss_server_port_1").value = ss_info.ss_server_port_1;
+							document.getElementById("ss_passwd_1").value = ss_info.ss_passwd_1;
+							document.getElementById("ss_local_port_1").value = ss_info.ss_local_port_1;
 							document.getElementById("dns_auto_0").checked = true;
 							document.getElementById("dns_auto_1").checked = true;
-							var select = document.getElementById("ss_method");
+							var select = document.getElementById("ss_method_1");
 							for(var i = 0; i < select.options.length; i++) {
-								if(select.options[i].value == ss_info.ss_method) {
+								if(select.options[i].value == ss_info.ss_method_1) {
 									select.options[i].selected = true;
 									break;
 								}
@@ -503,6 +758,67 @@
 								if(select.options[i].value == ss_info.ss_mode) {
 									select.options[i].selected = true;
 									document.getElementById("dns_mode").innerHTML = select.options[i].innerHTML;
+									break;
+								}
+							}
+							if(ss_info.ssr_enable_1 == 1) {
+								document.getElementById("ssr_enable_1").checked = true;
+							} else {
+								document.getElementById("ssr_enable_1").checked = false;
+							}
+							var select = document.getElementById("ssr_protocol_1");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.ssr_protocol_1) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
+							var select = document.getElementById("ssr_obfs_1");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.ssr_obfs_1) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
+							if(ss_info.ss_server_2 == null)
+								document.getElementById("ss_server_2").value = "";
+							else
+								document.getElementById("ss_server_2").value = ss_info.ss_server_2;
+							if(ss_info.ss_server_port_2 == null)
+								document.getElementById("ss_server_port_2").value = "";
+							else
+								document.getElementById("ss_server_port_2").value = ss_info.ss_server_port_2;
+							if(ss_info.ss_passwd_2 == null)
+								document.getElementById("ss_passwd_2").value = "";
+							else
+								document.getElementById("ss_passwd_2").value = ss_info.ss_passwd_2;
+							if(ss_info.ss_local_port_2 == null)
+								document.getElementById("ss_local_port_2").value = "";
+							else
+								document.getElementById("ss_local_port_2").value = ss_info.ss_local_port_2;
+							var select = document.getElementById("ss_method_2");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.ss_method_2) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
+							if(ss_info.ssr_enable_2 == 1) {
+								document.getElementById("ssr_enable_2").checked = true;
+							} else {
+								document.getElementById("ssr_enable_2").checked = false;
+							}
+							var select = document.getElementById("ssr_protocol_2");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.ssr_protocol_2) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
+							var select = document.getElementById("ssr_obfs_2");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.ssr_obfs_2) {
+									select.options[i].selected = true;
 									break;
 								}
 							}
@@ -541,7 +857,7 @@
 							$('#whitelist').html(tpl.tmpl({
 								paclist: tpldata
 							}));
-
+							ss_change();
 						}
 					});
 					return xhr;
