@@ -1,8 +1,3 @@
-<%
-local last_version=luci.sys.exec("curl -s http://www.misstar.com/tools/last_version.txt | grep misstar | awk '{print $2}'")
-
-local curr_version=luci.sys.exec("uci get misstar.misstar.version")
-%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 
@@ -97,6 +92,13 @@ local curr_version=luci.sys.exec("uci get misstar.misstar.version")
 													</td>
 
 												</tr>
+												<tr>
+													<td width="120">KMS：</td>
+													<td>
+														<a href="kms" class="cueRed ml" id="kms_status"></a>
+													</td>
+
+												</tr>
 											</table>
 										</ul>
 									</div>
@@ -109,18 +111,25 @@ local curr_version=luci.sys.exec("uci get misstar.misstar.version")
 								<table width="100%" border="0" cellspacing="0" cellpadding="7" class="tableBasic">
 									<tr>
 										<td width="120">工具箱版本：</td>
-										<td><span id="version"><%=curr_version%></span><a id="uninstall" href="javascript:uninstall();"><b>卸载</b></a><span id="last_version" style="display: none;"><%=last_version%></span><a id="update" style="display: none;color: red;" href="javascript:update();"><b>有新版本，马上升级</b></a></td>
+										<td><span id="version"></span>
+											<a id="uninstall" href="javascript:uninstall();"><b>卸载</b></a>
+											<br><span id="last_version"></span><a id="update" style="display: none;color: red;" href="javascript:update();"><b>马上升级</b></a>
+										</td>
 
 									</tr>
 									<tr>
 										<td>版本时间：</td>
-										<td>2016-09-03</td>
+										<td>2016-11-03</td>
 									</tr>
 									<tr>
 										<td>版本日志：</td>
 										<td>
-											<p class="cue">修复绝大部分BUG，可以正常使用</p>
-											<p class="cue"><b>新增Aria2支持</b></p>
+											<p class="cue">1，新增ssr支持，新增多节点、多节点自动切换</p>
+											<p class="cue">2，修复ftp bug</p>
+											<p class="cue">3，DNS功能完善，增加自动更新和在线编辑</p>
+											<p class="cue">4，新增KMS支持</p>
+											<p class="cue">5，远程web管理自定义端口</p>
+											<p class="cue">6，优化插件逻辑，降低系统资源占用，增加效率</p>
 										</td>
 									</tr>
 								</table>
@@ -147,88 +156,107 @@ local curr_version=luci.sys.exec("uci get misstar.misstar.version")
 		function init() {
 			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "get_status")%>', {}, function(rsp) {
 				if(rsp.code == 0) {
-					if(rsp.ss_status==0){
-						document.getElementById("ss_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("ss_status").innerHTML  = "正在运行";
+					if(rsp.ss_status == 0) {
+						document.getElementById("ss_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("ss_status").innerHTML = "正在运行";
 					}
-					if(rsp.adm_status==0){
-						document.getElementById("adm_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("adm_status").innerHTML  = "正在运行";
+					if(rsp.adm_status == 0) {
+						document.getElementById("adm_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("adm_status").innerHTML = "正在运行";
 					}
-					if(rsp.ftp_status==0){
-						document.getElementById("ftp_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("ftp_status").innerHTML  = "正在运行";
+					if(rsp.ftp_status == 0) {
+						document.getElementById("ftp_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("ftp_status").innerHTML = "正在运行";
 					}
-					if(rsp.ssh_status==0){
-						document.getElementById("ssh_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("ssh_status").innerHTML  = "正在运行";
+					if(rsp.ssh_status == 0) {
+						document.getElementById("ssh_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("ssh_status").innerHTML = "正在运行";
 					}
-					if(rsp.xlkn_status==0){
-						document.getElementById("xlkn_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("xlkn_status").innerHTML  = "正在运行";
+					if(rsp.xlkn_status == 0) {
+						document.getElementById("xlkn_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("xlkn_status").innerHTML = "正在运行";
 					}
-					if(rsp.web_status==0){
-						document.getElementById("web_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("web_status").innerHTML  = "正在运行";
+					if(rsp.web_status == 0) {
+						document.getElementById("web_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("web_status").innerHTML = "正在运行";
 					}
-					if(rsp.webshell_status==0){
-						document.getElementById("webshell_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("webshell_status").innerHTML  = "正在运行";
+					if(rsp.webshell_status == 0) {
+						document.getElementById("webshell_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("webshell_status").innerHTML = "正在运行";
 					}
-					if(rsp.aria2_status==0){
-						document.getElementById("aria2_status").innerHTML  = "未运行";
-					}else{
-						document.getElementById("aria2_status").innerHTML  = "正在运行";
+					if(rsp.aria2_status == 0) {
+						document.getElementById("aria2_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("aria2_status").innerHTML = "正在运行";
 					}
+					if(rsp.kms_status == 0) {
+						document.getElementById("kms_status").innerHTML = "未运行";
+					} else {
+						document.getElementById("kms_status").innerHTML = "正在运行";
+					}
+					document.getElementById("version").innerHTML = rsp.version;
+					var curr_version;
+					var last_version;
+					$.ajax({
+						url: "http://www.misstar.com/tools/last_version.php",
+						jsonp: 'callback',
+						dataType: 'jsonp',
+						data: '',
+						timeout: 2000, 
+						success: function(response) {
+							last_version = response.last_version;
+							curr_version = document.getElementById("version").innerHTML;
+							if(curr_version < last_version) {
+								document.getElementById("update").style.display = "inline-block";
+								document.getElementById("last_version").innerHTML = "最新版本：" + last_version;
+							}
+						}
+					});
+					
 				}
 			});
-		}
-	var curr_version=document.getElementById('version').innerHTML;
-	var last_version=document.getElementById('last_version').innerHTML;
-	if(curr_version != last_version)
-	{
-		document.getElementById("update").style.display="block";
-	}
-	function update(){
-		if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")){
-                $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "update")%>',  function(rsp){
-                if (rsp.code == 0) {
-                    setTimeout( function(){
-                        alert("升级成功，路由器正在重启。");
-                },2000);
-                } else {
-                    alert( rsp.msg );
-                    location.reload( 1 );
-                }
 
-            });
 		}
-		else
-			return;
-	}
-	function uninstall(){
-		if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")){
-                $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "uninstall")%>',  function(rsp){
-                if (rsp.code == 0) {
-                    setTimeout( function(){
-                        alert("卸载成功，路由器正在重启。");
-                },2000);
-                } else {
-                    alert( rsp.msg );
-                }
 
-            });
+		function update() {
+			if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")) {
+				$.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "update")%>', function(rsp) {
+					if(rsp.code == 0) {
+						setTimeout(function() {
+							alert("升级成功，路由器正在重启。");
+						}, 2000);
+					} else {
+						alert(rsp.msg);
+						location.reload(1);
+					}
+
+				});
+			} else
+				return;
 		}
-		else
-			return;
-	}
+
+		function uninstall() {
+			if(confirm("升级过程需要重启路由器，将会导致您的网络暂时中断，是否继续？")) {
+				$.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "uninstall")%>', function(rsp) {
+					if(rsp.code == 0) {
+						setTimeout(function() {
+							alert("卸载成功，路由器正在重启。");
+						}, 2000);
+					} else {
+						alert(rsp.msg);
+					}
+
+				});
+			} else
+				return;
+		}
 	</script>
 
 </html>

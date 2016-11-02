@@ -2,15 +2,16 @@
 
 
 ## Check The Router Hardware Model 
-Hardware_ID=$(uname -a | grep arm | wc -l)
-if [ "$Hardware_ID" = '1' ];then
-	echo "Your Router Model Is R1D/R2D"
-	Hardware_model="arm"
-else
-	echo "Your Router Model Is R1C/Mini/R3"
-	Hardware_model="mips"
-fi 
+mode=$(cat /proc/xiaoqiang/model)
 
+if [ "$mode" = "R2D" -o "$mode" = "R1D" ];then
+	Hardware_model="arm"
+elif [ "$mode" = "R3" ];then
+	Hardware_model="mips"
+else
+	echo "This Tools doesn't support XiaoMi Mini"
+	exit
+fi 
 
 mount -o remount,rw /
 ln -s /etc/misstar/misstar /usr/lib/lua/luci/view/web/setting/ >>  /tmp/ss-redir.log
@@ -41,6 +42,7 @@ fi
 result=$(cat /usr/lib/lua/luci/controller/web/index.lua | grep misstar | wc -l)
 
 if [ "$result" == "0" ]; then
+	sed -i "/"topograph"/a\\  entry({\"web\", \"misstar\", \"kms\"}, template(\"web/setting/misstar/kms\"), _(\"实用工具\"), 96)" /usr/lib/lua/luci/controller/web/index.lua
 	sed -i "/"topograph"/a\\  entry({\"web\", \"misstar\", \"kddb\"}, template(\"web/setting/misstar/kddb\"), _(\"实用工具\"), 95)" /usr/lib/lua/luci/controller/web/index.lua
 	sed -i "/"topograph"/a\\  entry({\"web\", \"misstar\", \"webshell\"}, template(\"web/setting/misstar/webshell\"), _(\"实用工具\"), 94)" /usr/lib/lua/luci/controller/web/index.lua
 	sed -i "/"topograph"/a\\  entry({\"web\", \"misstar\", \"mzsm\"}, template(\"web/setting/misstar/mzsm\"), _(\"实用工具\"), 91)" /usr/lib/lua/luci/controller/web/index.lua

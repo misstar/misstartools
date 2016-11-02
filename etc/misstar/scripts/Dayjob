@@ -2,6 +2,37 @@
 START=99
 STOP=99
 
+
+
+dns_auto=$(uci get misstar.ss.dns_auto)
+if ["$dns_auto" = 1 ]; then
+	num=$(cat /proc/sys/kernel/random/uuid | tr -d "a-zA-Z" | awk -F "-" '{printf $2}')
+	num=`expr $num % 300`
+	echo "sleep $num"
+
+	#update gfwlist
+	pacversion=$(uci get misstar.ss.pac_version)
+	whiteversion=$(uci get misstar.ss.white_version)
+	pac_version=$(curl http://www.misstar.com/tools/last_version.php -s | awk -F ',' '{print $2}' | awk -F '"' '{print $4}')
+	if [ "$pacversion" -lt "$pac_version" ]; then
+		curl http://www.misstar.com/tools/pac.conf -o /etc/misstar/.config/pac.conf 
+		uci set misstar.ss.pac_version=$pac_version
+		uci commit misstar
+	fi
+
+
+	num=$(cat /proc/sys/kernel/random/uuid | tr -d "a-zA-Z" | awk -F "-" '{printf $2}')
+	num=`expr $num % 300`
+	echo "sleep $num"
+	white_version=$(curl http://www.misstar.com/tools/last_version.php -s | awk -F ',' '{print $3}' | awk -F '"' '{print $4}')
+	if [ "$whiteversion" -lt "$white_version" ]; then
+		curl http://www.misstar.com/tools/chnroute.conf -o /etc/misstar/.config/chnroute.conf
+		uci set misstar.ss.white_version=$white_version
+		uci commit misstar
+	fi
+fi
+
+
 #检查重启服务
 /etc/misstar/scripts/adm restart
 /etc/misstar/scripts/vsftpd restart

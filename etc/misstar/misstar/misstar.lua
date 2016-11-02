@@ -11,34 +11,42 @@ function index()
     page.sysauth_authenticator = "jsonauth"
     page.index = true
 
-    entry({"api", "misstar", "update"}, call("mis_update"), (""), 407)
-    entry({"api", "misstar", "uninstall"}, call("mis_uninstall"), (""), 408)    
+    entry({"api", "misstar", "update"}, call("mis_update"), (""), 607)
+    entry({"api", "misstar", "uninstall"}, call("mis_uninstall"), (""), 608)    
     
-    entry({"api", "misstar", "get_ss"}, call("get_ss"), (""), 410)
-    entry({"api", "misstar", "set_ssdns"}, call("set_ssdns"), (""), 411)
-    entry({"api", "misstar", "get_ssstatus"}, call("get_ssstatus"), (""), 412)
-    entry({"api", "misstar", "add_pac"}, call("add_pac"), (""), 413)
-    entry({"api", "misstar", "del_pac"}, call("del_pac"), (""), 414)
-    entry({"api", "misstar", "add_white"}, call("add_white"), (""), 415)
-    entry({"api", "misstar", "del_white"}, call("del_white"), (""), 416)
+    entry({"api", "misstar", "get_ss"}, call("get_ss"), (""), 610)
+    entry({"api", "misstar", "set_ssdns"}, call("set_ssdns"), (""), 611)
+    entry({"api", "misstar", "get_ssstatus"}, call("get_ssstatus"), (""), 612)
+    entry({"api", "misstar", "add_pac"}, call("add_pac"), (""), 613)
+    entry({"api", "misstar", "del_pac"}, call("del_pac"), (""), 614)
+    entry({"api", "misstar", "add_white"}, call("add_white"), (""), 615)
+    entry({"api", "misstar", "del_white"}, call("del_white"), (""), 616)
 
     
-    entry({"api", "misstar", "get_adm"}, call("get_adm"), (""), 420)
-    entry({"api", "misstar", "set_adm"}, call("set_adm"), (""), 421)
+    entry({"api", "misstar", "get_adm"}, call("get_adm"), (""), 620)
+    entry({"api", "misstar", "set_adm"}, call("set_adm"), (""), 621)
+    entry({"api", "misstar", "get_kms"}, call("get_kms"), (""), 622)
+    entry({"api", "misstar", "set_kms"}, call("set_kms"), (""), 623)
     
-    entry({"api", "misstar", "get_rm"}, call("get_rm"), (""), 430)
-    entry({"api", "misstar", "set_rm"}, call("set_rm"), (""), 431)
     
-    entry({"api", "misstar", "get_ftp"}, call("get_ftp"), (""), 440)
-    entry({"api", "misstar", "set_ftp"}, call("set_ftp"), (""), 441)
+    entry({"api", "misstar", "get_rm"}, call("get_rm"), (""), 630)
+    entry({"api", "misstar", "set_rm"}, call("set_rm"), (""), 631)
     
-    entry({"api", "misstar", "get_webshell"}, call("get_webshell"), (""), 450)
-    entry({"api", "misstar", "set_webshell"}, call("set_webshell"), (""), 451)
+    entry({"api", "misstar", "get_ftp"}, call("get_ftp"), (""), 640)
+    entry({"api", "misstar", "set_ftp"}, call("set_ftp"), (""), 641)
     
-    entry({"api", "misstar", "get_aria2"}, call("get_aria2"), (""), 460)
-    entry({"api", "misstar", "set_aria2"}, call("set_aria2"), (""), 461)
+    entry({"api", "misstar", "get_webshell"}, call("get_webshell"), (""), 650)
+    entry({"api", "misstar", "set_webshell"}, call("set_webshell"), (""), 651)
     
-    entry({"api", "misstar", "get_status"}, call("get_status"), (""), 491)
+    
+    
+    entry({"api", "misstar", "get_aria2"}, call("get_aria2"), (""), 660)
+    entry({"api", "misstar", "set_aria2"}, call("set_aria2"), (""), 661)
+    
+    
+    
+    
+    entry({"api", "misstar", "get_status"}, call("get_status"), (""), 691)
     
 end
 
@@ -77,6 +85,7 @@ function get_ss()
 	ss_info.enable = uci:get("misstar","ss","enable")
 	ss_info.ss_mode = uci:get("misstar","ss","ss_mode")
 	ss_info.node_switch = uci:get("misstar","ss","node_switch")
+	ss_info.dns_mode = uci:get("misstar","ss","dns_mode")
 	
 	ss_info.ss_server_1 = uci:get("misstar","ss","ss_server_1")
 	ss_info.ss_local_port_1 = uci:get("misstar","ss","ss_local_port_1")
@@ -130,6 +139,7 @@ function set_ssdns()
     local ss_enable = LuciHttp.formvalue("ss_enable")
     local ss_mode = LuciHttp.formvalue("ss_mode")
     local node_switch = LuciHttp.formvalue("node_switch")
+    local dns_mode = LuciHttp.formvalue("dns_mode")
     
     local ss_server_1 = LuciHttp.formvalue("ss_server_1")
     local ss_server_port_1 = LuciHttp.formvalue("ss_server_port_1")
@@ -154,6 +164,8 @@ function set_ssdns()
     LuciUtil.exec("uci set misstar.ss.enable=" ..ss_enable)
     LuciUtil.exec("uci set misstar.ss.ss_mode=" ..ss_mode)
     LuciUtil.exec("uci set misstar.ss.node_switch=" ..node_switch)
+    LuciUtil.exec("uci set misstar.ss.dns_mode=" ..dns_mode)
+    
     
 	LuciUtil.exec("uci set misstar.ss.ss_server_1=" ..ss_server_1)
     LuciUtil.exec("uci set misstar.ss.ss_server_port_1=" ..ss_server_port_1)
@@ -277,14 +289,47 @@ function get_adm()
 	LuciHttp.write_json(result)
 end
 
+function set_kms()
+    local code = 0
+    local result = {}
+    local set=false
+    local kms_enable_switch=LuciHttp.formvalue("kms_enable_switch")
+    local kms_wan=LuciHttp.formvalue("kms_wan")
+	LuciUtil.exec("uci set misstar.kms.enable=" ..kms_enable_switch)
+	LuciUtil.exec("uci set misstar.kms.kms_wan=" ..kms_wan)	
+	LuciUtil.exec("uci commit misstar ")
+	LuciUtil.exec("/etc/misstar/scripts/kms restart ")
+    result["code"] = 0
+    if result.code ~= 0 then
+        result["msg"] = LuciHttp.formvalue("adm_enable_switch")
+    end
+    LuciHttp.write_json(result)
+end
+
+
+
+function get_kms()
+	local result = {}
+	local adm_enable
+	kms_enable = uci:get("misstar","kms","enable")
+	kms_wan = uci:get("misstar","kms","kms_wan")
+	result["code"]=0
+	result["kms_enable"]=kms_enable
+	result["kms_wan"]=kms_wan
+	LuciHttp.write_json(result)
+end
+
+
 function set_rm()
     local code = 0
     local result = {}
     local set=false
     local web_enable_switch=LuciHttp.formvalue("web_enable_switch")
     local sshd_enable_switch=LuciHttp.formvalue("sshd_enable_switch")
-	LuciUtil.exec("uci set misstar.web.enable=" ..web_enable_switch.. "")
-	LuciUtil.exec("uci set misstar.sshd.enable=" ..sshd_enable_switch.. "")
+    local web_port=LuciHttp.formvalue("web_port")
+	LuciUtil.exec("uci set misstar.web.enable=" ..web_enable_switch)
+	LuciUtil.exec("uci set misstar.web.web_port=" ..web_port)
+	LuciUtil.exec("uci set misstar.sshd.enable=" ..sshd_enable_switch)
 	LuciUtil.exec("uci commit misstar")
 	if web_enable_switch then
 		LuciUtil.exec("/etc/misstar/scripts/misstar web enable")
@@ -296,9 +341,6 @@ function set_rm()
 	else
 		LuciUtil.exec("/etc/misstar/scripts/misstar sshd disable")
 	end
-	
-	LuciUtil.exec("/etc/init.d/firewall restart")
-	LuciUtil.exec("/etc/init.d/sysapihttpd restart")
 	set=ture
 	if set then
         code = 0
@@ -318,10 +360,12 @@ function get_rm()
 	local web_enable
 	local sshd_enable
 	web_enable = uci:get("misstar","web","enable")
+	web_port = uci:get("misstar","web","web_port")
 	sshd_enable = uci:get("misstar","sshd","enable")
 	result["code"]=0
 	result["web_enable"]=web_enable
 	result["sshd_enable"]=sshd_enable
+	result["web_port"]=web_port
 	LuciHttp.write_json(result)
 end
 
@@ -488,6 +532,7 @@ function get_status()
 	local aria2_status
 	local webshell_status
 	ss_status=LuciUtil.exec("ps | grep -E 'ss-redir|ssr-redir' | grep -v 'grep' | wc -l")
+	version=uci:get("misstar","misstar","version")
 	adm_status=LuciUtil.exec("ps | grep adm | grep -v grep | wc -l")
 	ftp_status=LuciUtil.exec("ps | grep vsftp | grep -v grep | wc -l")
 	web_status=uci:get("misstar","web","enable")
@@ -495,8 +540,10 @@ function get_status()
 	webshell_status=LuciUtil.exec("ps | grep shellinabox | grep -v grep | wc -l")
 	xlkn_status=0
 	aria2_status=LuciUtil.exec("ps | grep aria2c | grep -v grep | wc -l")
+	kms_status=LuciUtil.exec("ps | grep kms | grep -v grep | wc -l")
 	result["code"]=0
 	result["ss_status"]=ss_status
+	result["version"]=version
 	result["xlkn_status"]=xlkn_status
 	result["adm_status"]=adm_status
 	result["ftp_status"]=ftp_status
@@ -504,6 +551,6 @@ function get_status()
 	result["ssh_status"]=ssh_status
 	result["aria2_status"]=aria2_status
 	result["webshell_status"]=webshell_status
-
+	result["kms_status"]=kms_status
 	LuciHttp.write_json(result)
 end

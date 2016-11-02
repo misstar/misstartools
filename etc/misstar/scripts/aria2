@@ -8,18 +8,18 @@ EXTRA_HELP="        status  Get shadowsocks status
         version Get Misstar Tools Version"
 
 ## Check The Router Hardware Model 
-Hardware_ID=$(uname -a | grep arm | wc -l)
-if [ "$Hardware_ID" = '0' ];then
-	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
-		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
-		exit
-	fi
-fi
-						
-if [ "$Hardware_ID" = '1' ];then
+mode=$(cat /proc/xiaoqiang/model)
+
+if [ "$mode" = "R2D" -o "$mode" = "R1D" ];then
 	Hardware_model="arm"
-else
+elif [ "$mode" = "R3" ];then
 	Hardware_model="mips"
+else
+	echo "This Tools doesn't support XiaoMi Mini"
+	exit
+fi 
+						
+if [ "$Hardware_model" = 'mips' ];then
 	result1=$(md5sum /lib/libstdc\+\+.so  | awk '{print $1}')
 	result2=$(md5sum /etc/misstar/mips/libstdc\+\+.so.6.0.16 | awk '{print $1}')
 	if [ "$result1" != "$result2" ]; then

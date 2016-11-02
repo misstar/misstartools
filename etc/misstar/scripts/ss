@@ -22,20 +22,17 @@ DNSCONF=/etc/misstar/.config/dns2socks.conf
 DNS_PORT=1082
 
 chnroute=/etc/misstar/.config/chnroute.txt
-
+chnroute_user=/etc/misstar/.config/chnroute_customize.txt
 ## Check The Router Hardware Model 
-Hardware_ID=$(uname -a | grep arm | wc -l)
-if [ "$Hardware_ID" = '0' ];then
-	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
-		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
-		exit
-	fi
-fi
+mode=$(cat /proc/xiaoqiang/model)
 
-if [ "$Hardware_ID" = '1' ];then
+if [ "$mode" = "R2D" -o "$mode" = "R1D" ];then
 	Hardware_model="arm"
-else
+elif [ "$mode" = "R3" ];then
 	Hardware_model="mips"
+else
+	echo "This Tools doesn't support XiaoMi Mini"
+	exit
 fi 
 
 
@@ -108,16 +105,24 @@ start()
 	insmod ipt_REDIRECT 2>/dev/null
 	chmod +x /etc/misstar/$Hardware_model/ss-redir	
 	chmod +x /etc/misstar/$Hardware_model/ss-local
-	#/etc/misstar/scripts/pdnsd.sh start
 	
+    service_start $LOCALPATH -c $DNSCONF
+    
     
 	MTlog "INFO" "Start DNS Process..."
-
-	service_start $LOCALPATH -c $DNSCONF
-	service_start $DNSPATH 127.0.0.1:$DNS_PORT 8.8.8.8:53 127.0.0.1:15353
+	dns_mode=$(uci get misstar.ss.dns_mode)
+	if [ "$dns_mode" = 'pdnsd' ];then
+		/etc/misstar/scripts/pdnsd.sh start
+	elif [ "$dns_mode" = 'dns2socks' ];then
+		service_start $DNSPATH 127.0.0.1:$DNS_PORT 8.8.8.8:53 127.0.0.1:15353
+	else
+		MTlog "Error" "Get DNS mode Error，Exiting..."
+		exit	
+	fi
+	
 	
 	if [ $? -eq 0 ];then
-    	MTlog "INFO" "Done!"
+    		MTlog "INFO" "Done! DNS started with "$dns" Mode."
 	else 
    		MTlog "Error" "DNS Process start failed,Exiting..."
     	exit
@@ -167,7 +172,13 @@ start()
 			start_ss_rules
 			;;
 	esac
-	ln -s /etc/misstar/.config/pac.conf /etc/dnsmasq.d/
+	ln -s /etc/misstar/.config/pac.conf /tmp/etc/dnsmasq.d/
+	
+	cat /etc/misstar/.config/pac_customize.conf | while read line
+	do
+		echo "server=/.$line/127.0.0.1#15353" >> /tmp/etc/dnsmasq.d/pac_customize.conf
+		echo "ipset=/.$line/gfwlist" >> /tmp/etc/dnsmasq.d/pac_customize.conf
+	done
 	/etc/init.d/dnsmasq restart
 	# Client Mode
 	#service_start /usr/bin/ss-local -b 0.0.0.0 -u -c $CONFIG -l 5353
@@ -188,6 +199,7 @@ start_ss_rules_whitelist()
 	iptables -t nat -A SHADOWSOCKS -d $wanip/16 -j RETURN
 	iptables -t nat -A SHADOWSOCKS -d $ss_server_ip -j RETURN
 	sed -e "s/^/-A nogfwnet &/g" -e "1 i\-N nogfwnet hash:net" $chnroute | ipset -R -!
+	sed -e "s/^/-A nogfwnet &/g" -e "1 i\-N nogfwnet hash:net" $chnroute_user | ipset -R -!
 	iptables -t nat -A SHADOWSOCKS -p tcp -m set ! --match-set nogfwnet dst -j REDIRECT --to-ports $ss_local_port
 	iptables -t nat -A PREROUTING -p tcp -j SHADOWSOCKS
 	#iptables -t nat -A PREROUTING -s $lanip/24 -p udp --dport 53 -j DNAT --to $lanip
@@ -270,7 +282,8 @@ stop_ss_rules()
 	MTlog "INFO" "Done!"
 	MTlog "INFO" "Remove Cache files..."
 	rm -rf /etc/dnsmasq.d/pac.conf
-	rm -rf /etc/dnsmasq.d/dnsmasq.conf.add
+	/tmp/etc/dnsmasq.d/pac_customize.conf
+	/etc/misstar/scripts/pdnsd.sh stop
 	/etc/init.d/dnsmasq restart
 	MTlog "INFO" "Done!"
 	chmod +x /opt/filetunnel/stunserver

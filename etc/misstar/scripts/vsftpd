@@ -8,18 +8,15 @@ EXTRA_HELP="        status  Get shadowsocks status
         version Get Misstar Tools Version"
 
 ## Check The Router Hardware Model 
-Hardware_ID=$(uname -a | grep arm | wc -l)
-if [ "$Hardware_ID" = '0' ];then
-	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
-		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
-		exit
-	fi
-fi
-						
-if [ "$Hardware_ID" = '1' ];then
+mode=$(cat /proc/xiaoqiang/model)
+
+if [ "$mode" = "R2D" -o "$mode" = "R1D" ];then
 	Hardware_model="arm"
-else
+elif [ "$mode" = "R3" ];then
 	Hardware_model="mips"
+else
+	echo "This Tools doesn't support XiaoMi Mini"
+	exit
 fi 
 	
 appname=vsftpd
@@ -35,8 +32,13 @@ ftp_getconfig() {
 		echo "vsftpd is aleady running,Exit..."
 		exit
 	fi
-	
-	
+	rm_enable=$(uci get misstar.$appname.rm_enable)
+	if [ "$AreadyRunning" == '1' ];then
+		result=$(iptables -L | grep misstar-vsfptd | wc -l)
+		if [ "$result" = '0' ];then
+			iptables -A INPUT -p tcp --dport 21 -j ACCEPT -m comment --comment "misstar-vsftpd"
+		fi
+	fi
 	root_enable=$(uci get misstar.$appname.root_enable)
 	if [ "$root_enable" = '1' ];then
 		echo "root" >> /etc/vsftpd.users
@@ -70,6 +72,7 @@ start() {
 
 stop() {
 	service_stop /etc/misstar/$Hardware_model/vsftpd
+	iptables -D INPUT -p tcp --dport 21 -j ACCEPT -m comment --comment "misstar-vsftpd" &> /dev/null
 }
 
 status() {

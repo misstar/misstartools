@@ -4,22 +4,16 @@ echo "Thank you for install Misstar Tools For MiRouter!"
 
 
 ## Check The Router Hardware Model 
-Hardware_ID=$(uname -a | grep arm | wc -l)
-if [ "$Hardware_ID" = '0' ];then
-	if [ $(uname -a | awk '{print $4;}' | sed 's/'#'//') = '2' ]; then
-		echo "Error:Misstar Tools  temporarily does not support Xiaomi Mini Router!"
-		exit
-	fi
-fi
+mode=$(cat /proc/xiaoqiang/model)
 
-if [ "$Hardware_ID" = '1' ];then
-	echo "Your Router Model Is R1D/R2D"
+if [ "$mode" = "R2D" -o "$mode" = "R1D" ];then
 	Hardware_model="arm"
-else
-	echo "Your Router Model Is R3"
+elif [ "$mode" = "R3" ];then
 	Hardware_model="mips"
+else
+	echo "This Tools doesn't support XiaoMi Mini"
+	exit
 fi 
-
 
 
 echo "The installnation process will reboot your router after complete"

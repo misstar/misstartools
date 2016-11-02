@@ -15,33 +15,6 @@ case "$1" in
 	uci set misstar.vsftpd.ftp_user=$2
 	uci set misstar.vsftpd.ftp_password=$3
 	uci commit misstar
-	rm_enable=$(uci get misstar.vsftpd.rm_enable)
-	if [ "$rm_enable" = '1' ];then
-		status=`uci show firewall | grep vsftpd | wc -l`
-		if [ "$status" = "1" ];then
-			exit
-		else
-			uci set firewall.vsftpd=rule
-			uci set firewall.vsftpd.src=wan
-			uci set firewall.vsftpd.proto=tcp
-			uci set firewall.vsftpd.target=ACCEPT
-			uci set firewall.vsftpd.family=ipv4
-			uci set firewall.vsftpd.dest_port=21
-			uci commit firewall
-			/etc/init.d/firewall restart
-			/etc/misstar/scprits/Dayjob
-		fi
-	else
-		status=`uci show firewall | grep vsftpd | wc -l`
-		if [ "$status" = "0" ];then
-			exit
-		else
-			uci delete firewall.vsftpd
-			uci commit firewall
-			/etc/init.d/firewall restart
-			/etc/misstar/scprits/Dayjob
-		fi
-	fi
 	 ;;
 "adm")
 	case "$2" in
@@ -59,57 +32,62 @@ case "$1" in
 "sshd")
 	case "$2" in
 		"enable")
-			uci set firewall.sshd=rule
-			uci set firewall.sshd.src=wan
-			uci set firewall.sshd.proto=tcp
-			uci set firewall.sshd.target=ACCEPT
-			uci set firewall.sshd.family=ipv4
-			uci set firewall.sshd.dest_port=22
-			uci commit firewall
-			/etc/init.d/firewall restart
+			app_enable=$(uci get misstar.sshd.enable)
+			if [ "$app_enable" = '1' ];then
+				result=$(iptables -L | grep misstar-sshd | wc -l)
+				if [ "$result" = '0' ];then
+					iptables -A INPUT -p tcp --dport 22 -j ACCEPT -m comment --comment "misstar-sshd"
+				fi
+			fi
 			;;
 		"disable")
-			uci delete firewall.sshd
-			uci commit firewall
+			iptables -D INPUT -p tcp --dport 22 -j ACCEPT -m comment --comment "misstar-kms" &> /dev/null
 			;;
 		"status")
-			status=`uci show firewall | grep sshd | wc -l`
+			status=$(iptables -L | grep misstar-sshd | wc -l)
 			echo $status
 	 esac
 	 ;;
 "web")
 	case "$2" in
 		"enable")
-			sed -i '/set \$finalvar \"\$canproxy \$isluci\"/i\    set \$isluci "1"; #misstar' /etc/sysapihttpd/miwifi-webinitrd.conf
-			uci set firewall.rmweb=rule
-			uci set firewall.rmweb.src=wan
-			uci set firewall.rmweb.proto=tcp
-			uci set firewall.rmweb.target=ACCEPT
-			uci set firewall.rmweb.family=ipv4
-			uci set firewall.rmweb.dest_port=8098
-			uci set firewall.aria=rule
-			uci set firewall.aria.src=wan
-			uci set firewall.aria.proto=tcp
-			uci set firewall.aria.target=ACCEPT
-			uci set firewall.aria.family=ipv4
-			uci set firewall.aria.dest_port=10086
-			uci set firewall.webshell=rule
-			uci set firewall.webshell.src=wan
-			uci set firewall.webshell.proto=tcp
-			uci set firewall.webshell.target=ACCEPT
-			uci set firewall.webshell.family=ipv4
-			uci set firewall.webshell.dest_port=4200
-			uci commit firewall
+			app_enable=$(uci get misstar.web.enable)
+			if [ "$app_enable" = '1' ];then
+				result=$(cat /etc/sysapihttpd/miwifi-webinitrd.conf | grep misstar | wc -l)
+				if [ "$result" = '0' ];then
+					sed -i '/set \$finalvar \"\$canproxy \$isluci\"/i\    set \$isluci "1"; #misstar' /etc/sysapihttpd/miwifi-webinitrd.conf
+					/etc/init.d/sysapihttpd restart
+					mount -o remount,rw /
+					sed -i 's/string.upper(luci.sys.net.ip4mac(remote_addr))/luci.sys.net.ip4mac(remote_addr)/'       /usr/lib/lua/luci/view/web/setting/wan.htm
+					sed -i 's/string.upper(luci.sys.net.ip4mac(remote_addr))/luci.sys.net.ip4mac(remote_addr)/'       /usr/lib/lua/luci/view/web/setting/ddns.htm 
+				fi
+				web_port=$(uci get misstar.web.web_port)
+				if [ "$web_port" != '8098' ];then
+					sed -i '/misstar/d' /etc/sysapihttpd/sysapihttpd.conf 
+					sed -i "/8098/a\    listen ${web_port};#misstar" /etc/sysapihttpd/sysapihttpd.conf 
+					/etc/init.d/sysapihttpd restart
+				fi
+				iptables -A INPUT -p tcp --dport $web_port -j ACCEPT -m comment --comment "misstar-web"
+				result=$(iptables -L | grep misstar-aria2 | wc -l)
+				if [ "$result" = '0' ];then
+					iptables -A INPUT -p tcp --dport 10086 -j ACCEPT -m comment --comment "misstar-aria2"
+				fi
+					result=$(iptables -L | grep misstar-webshell | wc -l)
+				if [ "$result" = '0' ];then
+					iptables -A INPUT -p tcp --dport 4200 -j ACCEPT -m comment --comment "misstar-webshell"
+				fi
+			fi
 			;;
 		"disable")
 			sed -i '/misstar/d' /etc/sysapihttpd/miwifi-webinitrd.conf
-			uci delete firewall.rmweb
-			uci delete firewall.aria
-			uci delete firewall.webshell
-			uci commit firewall
+			sed -i '/misstar/d' /etc/sysapihttpd/sysapihttpd.conf 
+			/etc/init.d/sysapihttpd restart
+			iptables -D INPUT -p tcp --dport 8098 -j ACCEPT -m comment --comment "misstar-web" &> /dev/null
+			iptables -D INPUT -p tcp --dport 10086 -j ACCEPT -m comment --comment "misstar-aria2" &> /dev/null
+			iptables -D INPUT -p tcp --dport 4200 -j ACCEPT -m comment --comment "misstar-webshell" &> /dev/null
 			;;
 		"status")
-			status=`uci show firewall | grep sshd | wc -l`
+			status=$(iptables -L | grep misstar-web | wc -l)
 			echo $status
 	 esac
 	 ;;

@@ -65,7 +65,7 @@
 											<tr>
 												<td align="left">工作模式</td>
 												<td colspan="2">
-													<select id="ss_mode" style="width: 300px;">
+													<select id="ss_mode" style="width: 312px;">
 														<option value="gfwlist">GfwList</option>
 														<option value="gamemode">游戏模式</option>
 														<option value="whitelist" selected>白名单</option>
@@ -123,7 +123,7 @@
 											<tr>
 												<td align="left">加密方式</td>
 												<td>
-													<select id="ss_method_1" style="width: 300px;" disabled="disabled">
+													<select id="ss_method_1" style="width: 312px;" disabled="disabled">
 														<option value="aes-256-cfb">aes-256-cfb</option>
 														<option value="aes-192-cfb">aes-192-cfb</option>
 														<option value="aes-128-cfb">aes-128-cfb</option>
@@ -145,7 +145,7 @@
 													</select>
 												</td>
 												<td>
-													<select id="ss_method_2" style="width: 300px;" disabled="disabled">
+													<select id="ss_method_2" style="width: 312px;" disabled="disabled">
 														<option value="aes-256-cfb">aes-256-cfb</option>
 														<option value="aes-192-cfb">aes-192-cfb</option>
 														<option value="aes-128-cfb">aes-128-cfb</option>
@@ -176,7 +176,7 @@
 											<tr>
 												<td align="left">协议</td>
 												<td>
-													<select id="ssr_protocol_1" disabled="disabled" style="width: 300px;" disabled="disabled">
+													<select id="ssr_protocol_1" disabled="disabled" style="width: 312px;" disabled="disabled">
 														<option value="origin">origin</option>
 														<option value="verify_simple">verify_simple</option>
 														<option value="verify_deflate">verify_deflate</option>
@@ -190,7 +190,7 @@
 													</select>
 												</td>
 												<td>
-													<select id="ssr_protocol_2" disabled="disabled" style="width: 300px;" disabled="disabled">
+													<select id="ssr_protocol_2" disabled="disabled" style="width: 312px;" disabled="disabled">
 														<option value="origin">origin</option>
 														<option value="verify_simple">verify_simple</option>
 														<option value="verify_deflate">verify_deflate</option>
@@ -207,7 +207,7 @@
 											<tr>
 												<td align="left">混淆方式</td>
 												<td>
-													<select id="ssr_obfs_1" disabled="disabled" style="width: 300px;" disabled="disabled">
+													<select id="ssr_obfs_1" disabled="disabled" style="width: 312px;" disabled="disabled">
 														<option value="plain">plain</option>
 														<option value="http_simple">http_simple</option>
 														<option value="http_simple_compatible">http_simple_compatible</option>
@@ -224,7 +224,7 @@
 													</select>
 												</td>
 												<td>
-													<select id="ssr_obfs_2" disabled="disabled" style="width: 300px;" disabled="disabled">
+													<select id="ssr_obfs_2" disabled="disabled" style="width: 312px;" disabled="disabled">
 														<option value="plain">plain</option>
 														<option value="http_simple">http_simple</option>
 														<option value="http_simple_compatible">http_simple_compatible</option>
@@ -284,7 +284,11 @@
 											<tr>
 												<td align="left">当前DNS工作模式</td>
 												<td>
-													<p class="cue" id="dns_mode"></p>
+													<select id="dns_mode" style="width: 312px;">
+														<option value="pdnsd">pdnsd【推荐】</option>
+														<option value="dns2socks">dns2socks</option>
+													</select>
+													<p class="cue">正常情况下推荐使用pdnsd,但是某些情况下比如特殊地区、特殊运营商导致pdnsd无法突破</br>这个时候，请使用dns2socks，百分百突破，解析速度取决于你ss服务器的延迟/速度。</p>
 												</td>
 											</tr>
 											<tr>
@@ -316,7 +320,7 @@
 											<tr>
 												<td align="left">添加自定义地址</td>
 												<td>
-													<input type="text" id="add_pac" value="" size="80" class="inpMain" style="width: 300px;" />
+													<input type="text" id="add_pac" placeholder="请输入网址，比如：ip138.com" value="" size="80" class="inpMain" style="width: 300px;" />
 													<input type="button" class="btn_submit" onclick="add_pac_list();" value="添加">
 												</td>
 											</tr>
@@ -351,7 +355,7 @@
 											<tr>
 												<td align="left">添加自定义地址</td>
 												<td>
-													<input type="text" id="add_white" value="" size="80" class="inpMain" style="width: 300px;" />
+													<input type="text" id="add_white" placeholder="请输入ip段，比如：192.168.31.0/24" value="" size="80" class="inpMain" style="width: 300px;" />
 													<input type="button" class="btn_submit" onclick="add_white_list();" value="添加">
 												</td>
 											</tr>
@@ -416,7 +420,7 @@
 		</script>
 		<script type="tmpl/html" id="tplwhitelist">
 			{if($whitelist.length > 0)} {for(var i=0; i
-			< $paclist.length; i++)} <tr>
+			< $whitelist.length; i++)} <tr>
 				<td>{$whitelist[i].address}</td>
 				<td align="center">
 					<a href="javascript:del_white('{$whitelist[i].address}')">删除</a>
@@ -566,6 +570,7 @@
 				var ss_passwd_1, ss_passwd_2;
 				var ss_method_1, ss_method_2;
 				var ss_mode;
+				var dns_mode;
 				var ssr_protocol_1, ssr_protocol_2;
 				var ssr_obfs_1, ssr_obfs_2;
 				if(document.getElementById("ss_enable_0").checked == true) {
@@ -586,6 +591,9 @@
 				if(document.getElementById("node_switch").checked == true) {
 					node_switch = 1;
 				}
+				
+				dns_mode=document.getElementById("dns_mode").value;
+				
 				ss_server_1 = document.getElementById("ss_server_1").value;
 				ss_server_port_1 = document.getElementById("ss_server_port_1").value;
 				ss_local_port_1 = document.getElementById("ss_local_port_1").value;
@@ -607,6 +615,7 @@
 					ss_enable: ss_enable,
 					node_switch: node_switch,
 					ss_mode: ss_mode,
+					dns_mode: dns_mode,
 					ss_server_1: ss_server_1,
 					ss_passwd_1: ss_passwd_1,
 					ss_server_port_1: ss_server_port_1,
@@ -732,8 +741,6 @@
 						if(rsp.code == 0) {
 							var ss_info = rsp.ss_info;
 							var dns_info = rsp.dns_info;
-							var tpl = $('#tplpaclist').html(),
-								tpldata = [];
 							document.getElementById("ss_enable_" + ss_info.enable).checked = true;
 							if(ss_info.node_switch == 1) {
 								document.getElementById("node_switch").checked = true;
@@ -757,7 +764,6 @@
 							for(var i = 0; i < select.options.length; i++) {
 								if(select.options[i].value == ss_info.ss_mode) {
 									select.options[i].selected = true;
-									document.getElementById("dns_mode").innerHTML = select.options[i].innerHTML;
 									break;
 								}
 							}
@@ -822,12 +828,21 @@
 									break;
 								}
 							}
+							
+							var select = document.getElementById("dns_mode");
+							for(var i = 0; i < select.options.length; i++) {
+								if(select.options[i].value == ss_info.dns_mode) {
+									select.options[i].selected = true;
+									break;
+								}
+							}
 
 							document.getElementById("pac_no_customize").innerHTML = dns_info.pac_no_customize;
 							document.getElementById("pac_no").innerHTML = dns_info.pac_no;
 							document.getElementById("whitelist_no_customize").innerHTML = dns_info.chn_no_customize;
 							document.getElementById("whitelist_no").innerHTML = dns_info.chn_no;
-
+							var tpl = $('#tplpaclist').html(),
+								tpldata = [];
 							if(dns_info.pac_customize.length > 0) {
 								var pac_customize = dns_info.pac_customize.split('\n');
 								for(var i = 0; i < pac_customize.length; i++) {
@@ -842,6 +857,7 @@
 							$('#paclist').html(tpl.tmpl({
 								paclist: tpldata
 							}));
+							tpl = $('#tplwhitelist').html();
 							tpldata = [];
 							if(dns_info.chn_list.length > 0) {
 								var chn_customize = dns_info.chn_list.split('\n');
@@ -855,7 +871,7 @@
 								}
 							}
 							$('#whitelist').html(tpl.tmpl({
-								paclist: tpldata
+								whitelist: tpldata
 							}));
 							ss_change();
 						}

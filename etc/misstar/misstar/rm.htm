@@ -45,6 +45,13 @@
 											</td>
 										</tr>
 										<tr>
+												<td align="left">服务器端口</td>
+												<td>
+													<input type="text" id="web_port" value="" size="80" class="inpMain" style="width: 300px;" />
+												</td>
+												
+											</tr>
+										<tr>
 											<td align="right">说明</td>
 											<td>
 													<p class="cue">开启远程web后，可配合DDNS在外网对路由器进行管理。</p>
@@ -124,7 +131,12 @@
 			{
 				sshd_enable=1;
 			}
-			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_rm")%>', {web_enable_switch: web_enable,sshd_enable_switch: sshd_enable}, function(rsp) {
+			var web_port=document.getElementById("web_port").value;
+			var xhr = $.getJSON('<%=luci.dispatcher.build_url("api", "misstar", "set_rm")%>', {
+				web_enable_switch: web_enable,
+				web_port: web_port,
+				sshd_enable_switch: sshd_enable
+			}, function(rsp) {
 				if(rsp.code == 0) {
 					location.reload(1);
 				} else {
@@ -142,6 +154,7 @@
 					if(rsp.code == 0) {
 						var web_enable = rsp.web_enable;
 						var sshd_enable = rsp.sshd_enable;
+						document.getElementById("web_port").value=rsp.web_port;
 						document.getElementById("web_enable_" + web_enable).checked = true;
 						document.getElementById("sshd_enable_" + sshd_enable).checked = true;
 					}
